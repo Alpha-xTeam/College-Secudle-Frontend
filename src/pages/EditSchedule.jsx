@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Badge } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { roomsAPI } from '../api/rooms';
 import api from '../api/rooms';
 import { doctorsAPI } from '../api/doctors';
 import { getUserRole } from '../utils/auth';
+import DoctorSearch from '../components/DoctorSearch';
 
 const EditSchedule = () => {
   const { roomId } = useParams();
@@ -40,11 +41,15 @@ const EditSchedule = () => {
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false); // State for delete all confirmation modal
   const [deleteAllLoading, setDeleteAllLoading] = useState(false); // State for delete all loading
   const [doctors, setDoctors] = useState([]); // New state for doctors
-  const [doctorAvailability, setDoctorAvailability] = useState({}); // Track doctor availability
-  const [allSchedules, setAllSchedules] = useState([]); // All schedules from all rooms
+  const [doctorSearchTerm, setDoctorSearchTerm] = useState(''); // search term for filtering doctors
+  const [allSchedules, setAllSchedules] = useState([]); // جميع الجداول من جميع القاعات
+  const [doctorAvailability, setDoctorAvailability] = useState({}); // حالة توفر المدرسين
+  const [conflictDetails, setConflictDetails] = useState({}); // تفاصيل التعارض للمدرسين
 
-  // Filtered doctors list - now always shows all doctors without department filter
-  const filteredDoctorsByDept = doctors;
+  // Apply search term to filter doctors
+  const filteredDoctors = doctorSearchTerm && doctorSearchTerm.trim() !== ''
+    ? doctors.filter(d => (d.name || '').toLowerCase().includes(doctorSearchTerm.toLowerCase()))
+    : doctors;
 
   const [scheduleForm, setScheduleForm] = useState({
     study_type: 'morning',
@@ -85,57 +90,6 @@ const EditSchedule = () => {
     evening: 'مسائي'
   };
 
-  // دالة للتحقق من توفر الدكتور في الوقت المحدد مع إرجاع تفاصيل التعارض من جميع القاعات
-  const checkDoctorAvailability = useCallback((doctorId, dayOfWeek, startTime, endTime, studyType, academicStage) => {
-    if (!doctorId || !dayOfWeek || !startTime || !endTime) return { available: true, conflict: null };
-    
-    // البحث عن تعارضات في جميع الجداول من جميع القاعات
-    const conflictingSchedule = allSchedules.find(schedule => {
-      // تجاهل الجدول الحالي عند التعديل
-      if (editingSchedule && schedule.id === editingSchedule.id) return false;
-      
-      // فحص إذا كان هذا الجدول يحتوي على الدكتور
-      let scheduleHasDoctor = false;
-      if (schedule.has_multiple_doctors && schedule.schedule_doctors) {
-        scheduleHasDoctor = schedule.schedule_doctors.some(sd => sd.doctor_id === doctorId);
-      } else if (schedule.doctor_id) {
-        scheduleHasDoctor = schedule.doctor_id === doctorId;
-      }
-      
-      if (!scheduleHasDoctor) return false;
-      
-      // فحص التعارض في نفس اليوم ونوع الدراسة
-      if (schedule.day_of_week !== dayOfWeek || schedule.study_type !== studyType) return false;
-      
-      // فحص تداخل الوقت
-      const scheduleStart = schedule.start_time;
-      const scheduleEnd = schedule.end_time;
-      
-      const hasTimeConflict = (
-        (startTime >= scheduleStart && startTime < scheduleEnd) ||
-        (endTime > scheduleStart && endTime <= scheduleEnd) ||
-        (startTime <= scheduleStart && endTime >= scheduleEnd)
-      );
-      
-      return hasTimeConflict;
-    });
-    
-    if (conflictingSchedule) {
-      return {
-        available: false,
-        conflict: {
-          subject: conflictingSchedule.subject_name,
-          stage: stages[conflictingSchedule.academic_stage] || conflictingSchedule.academic_stage,
-          time: `${conflictingSchedule.start_time} - ${conflictingSchedule.end_time}`,
-          room: conflictingSchedule.room_name || conflictingSchedule.room_code || `قاعة ${conflictingSchedule.room_id}`,
-          day: days[conflictingSchedule.day_of_week] || conflictingSchedule.day_of_week
-        }
-      };
-    }
-    
-    return { available: true, conflict: null };
-  }, [allSchedules, editingSchedule, stages, days]);
-
   const fetchRoomAndSchedules = useCallback(async () => {
     try {
       // جلب معلومات القاعة
@@ -155,39 +109,117 @@ const EditSchedule = () => {
     }
   }, [roomId]);
 
-  // دالة جديدة لجلب جميع الجداول من جميع القاعات
+  // دالة لجلب جميع الجداول من جميع القاعات مع تحسين الأداء
   const fetchAllSchedules = useCallback(async () => {
     try {
-      const response = await roomsAPI.getAllRooms();
-      if (response.success && response.data) {
-        const allSchedulesPromises = response.data.map(async (room) => {
-          try {
-            const roomSchedulesResponse = await roomsAPI.getRoomSchedules(room.id);
-            if (roomSchedulesResponse.success) {
-              return roomSchedulesResponse.data.map(schedule => ({
-                ...schedule,
-                room_name: room.name,
-                room_code: room.code
-              }));
+      const allRoomsResponse = await roomsAPI.getAllRooms();
+      if (allRoomsResponse.success) {
+        const rooms = allRoomsResponse.data;
+        let allSchedulesData = [];
+        
+        // تقليل عدد الطلبات المتزامنة لتجنب timeout
+        const batchSize = 3; // معالجة 3 قاعات في كل مرة
+        for (let i = 0; i < rooms.length; i += batchSize) {
+          const batch = rooms.slice(i, i + batchSize);
+          
+          const batchPromises = batch.map(async (room) => {
+            try {
+              const schedulesResponse = await roomsAPI.getRoomSchedules(room.id);
+              if (schedulesResponse.success) {
+                return schedulesResponse.data.map(schedule => ({
+                  ...schedule,
+                  room_name: room.name,
+                  room_code: room.code,
+                  room_id: room.id
+                }));
+              }
+              return [];
+            } catch (error) {
+              console.warn(`Failed to fetch schedules for room ${room.id}:`, error);
+              return [];
             }
-          } catch (error) {
-            console.warn(`Failed to fetch schedules for room ${room.id}:`, error);
+          });
+          
+          // انتظار انتهاء المجموعة الحالية قبل الانتقال للتالية
+          const batchResults = await Promise.all(batchPromises);
+          batchResults.forEach(roomSchedules => {
+            allSchedulesData = [...allSchedulesData, ...roomSchedules];
+          });
+          
+          // تأخير قصير بين المجموعات لتجنب إرهاق الخادم
+          if (i + batchSize < rooms.length) {
+            await new Promise(resolve => setTimeout(resolve, 100));
           }
-          return [];
-        });
-
-        const allSchedulesArrays = await Promise.all(allSchedulesPromises);
-        const flattenedSchedules = allSchedulesArrays.flat();
-        setAllSchedules(flattenedSchedules);
+        }
+        
+        setAllSchedules(allSchedulesData);
       }
     } catch (error) {
-      console.warn('Failed to fetch all schedules:', error);
+      console.error('Error fetching all schedules:', error);
+      // في حالة الفشل، استخدم جداول القاعة الحالية فقط
+      setAllSchedules(schedules);
     }
-  }, []);
+  }, [schedules]);
+
+  // دالة للتحقق من توفر المدرس في وقت معين
+  const checkDoctorAvailability = useCallback((doctorId, day, startTime, endTime, studyType, stage, excludeScheduleId = null) => {
+    if (!doctorId || !day || !startTime || !endTime) return { available: true };
+    
+    // استخدم جداول القاعة الحالية إذا لم تُحمل جميع الجداول بعد
+    const schedulesToCheck = allSchedules.length > 0 ? allSchedules : schedules;
+    
+    const conflictingSchedule = schedulesToCheck.find(schedule => {
+      // تجاهل الجدول المحرر حالياً
+      if (excludeScheduleId && schedule.id === excludeScheduleId) return false;
+      
+      // التحقق من المدرس
+      const hasSameDoctorSingle = schedule.doctor_id === parseInt(doctorId);
+      const hasSameDoctorMultiple = schedule.schedule_doctors && 
+        schedule.schedule_doctors.some(sd => sd.doctor_id === parseInt(doctorId));
+      
+      if (!hasSameDoctorSingle && !hasSameDoctorMultiple) return false;
+      
+      // التحقق من اليوم ونوع الدراسة
+      if (schedule.day_of_week !== day || schedule.study_type !== studyType) return false;
+      
+      // التحقق من تداخل الوقت
+      const scheduleStart = schedule.start_time;
+      const scheduleEnd = schedule.end_time;
+      
+      const timeOverlap = (
+        (startTime >= scheduleStart && startTime < scheduleEnd) ||
+        (endTime > scheduleStart && endTime <= scheduleEnd) ||
+        (startTime <= scheduleStart && endTime >= scheduleEnd)
+      );
+      
+      return timeOverlap;
+    });
+    
+    if (conflictingSchedule) {
+      return {
+        available: false,
+        conflict: {
+          subject: conflictingSchedule.subject_name,
+          stage: stages[conflictingSchedule.academic_stage] || conflictingSchedule.academic_stage,
+          time: `${conflictingSchedule.start_time} - ${conflictingSchedule.end_time}`,
+          room: conflictingSchedule.room_name || `قاعة ${conflictingSchedule.room_id}`,
+          roomCode: conflictingSchedule.room_code,
+          day: days[conflictingSchedule.day_of_week] || conflictingSchedule.day_of_week,
+          studyType: studyTypes[conflictingSchedule.study_type] || conflictingSchedule.study_type
+        }
+      };
+    }
+    
+    return { available: true };
+  }, [allSchedules, schedules]);
 
   useEffect(() => {
     fetchRoomAndSchedules();
-    fetchAllSchedules();
+    
+    // تأخير جلب جميع الجداول لتجنب الضغط على الخادم
+    const timeoutId = setTimeout(() => {
+      fetchAllSchedules();
+    }, 1000);
 
     const fetchAllRooms = async () => {
       try {
@@ -211,78 +243,55 @@ const EditSchedule = () => {
         }
     };
     fetchDoctors();
+    
+    return () => clearTimeout(timeoutId);
+  }, [fetchRoomAndSchedules]);
 
-    // fetch departments for doctor filtering if available
-    // Note: department filtering has been removed for security reasons.
-    // We intentionally do not call the /doctors/departments endpoint to avoid permission errors (403).
-  }, [fetchRoomAndSchedules, fetchAllSchedules]);
-
-  // تحسين الأداء باستخدام useMemo لتجنب حسابات مكررة
-  const formDependencies = useMemo(() => ({
-    day: scheduleForm.day_of_week,
-    start: scheduleForm.start_time,
-    end: scheduleForm.end_time,
-    study: scheduleForm.study_type,
-    stage: scheduleForm.academic_stage
-  }), [scheduleForm.day_of_week, scheduleForm.start_time, scheduleForm.end_time, scheduleForm.study_type, scheduleForm.academic_stage]);
-
-  // تحديث حالة توفر الدكاترة عند تغيير البيانات
+  // تحديث توفر المدرسين عند تغيير الوقت أو اليوم أو نوع الدراسة
   useEffect(() => {
-    if (doctors.length === 0) return;
-    
-    const availability = {};
-    let hasChanges = false;
-    
-    doctors.forEach(doctor => {
-      const availabilityCheck = checkDoctorAvailability(
-        doctor.id,
-        formDependencies.day,
-        formDependencies.start,
-        formDependencies.end,
-        formDependencies.study,
-        formDependencies.stage
-      );
-      availability[doctor.id] = availabilityCheck;
+    if (scheduleForm.start_time && scheduleForm.end_time && scheduleForm.day_of_week && scheduleForm.study_type && doctors.length > 0) {
+      const availability = {};
+      const conflicts = {};
       
-      // فحص إذا كان هناك تغيير فعلي
-      const oldAvailability = doctorAvailability[doctor.id];
-      if (!oldAvailability || 
-          oldAvailability.available !== availabilityCheck.available ||
-          JSON.stringify(oldAvailability.conflict) !== JSON.stringify(availabilityCheck.conflict)) {
-        hasChanges = true;
-      }
-    });
-    
-    // تحديث فقط إذا كان هناك تغييرات فعلية
-    if (hasChanges) {
+      doctors.forEach(doctor => {
+        const check = checkDoctorAvailability(
+          doctor.id,
+          scheduleForm.day_of_week,
+          scheduleForm.start_time,
+          scheduleForm.end_time,
+          scheduleForm.study_type,
+          scheduleForm.academic_stage,
+          editingSchedule?.id
+        );
+        
+        // تأكد من أن المفتاح هو رقم
+        const doctorKey = parseInt(doctor.id);
+        availability[doctorKey] = check.available;
+        if (!check.available) {
+          conflicts[doctorKey] = check.conflict;
+        }
+      });
+      
       setDoctorAvailability(availability);
+      setConflictDetails(conflicts);
     }
-  }, [doctors, allSchedules, formDependencies]);
+  }, [scheduleForm.start_time, scheduleForm.end_time, scheduleForm.day_of_week, scheduleForm.study_type, scheduleForm.academic_stage, doctors, checkDoctorAvailability, editingSchedule]);
 
-  const fetchSchedules = useCallback(async () => {
+  const fetchSchedules = async () => {
     try {
       const response = await roomsAPI.getRoomSchedules(roomId);
       if (response.success) {
-        console.log('DEBUG: Received schedules:', response.data); // Debug log
         setSchedules(response.data);
+      }
+      // تحديث جميع الجداول فقط إذا لزم الأمر
+      if (allSchedules.length === 0) {
+        setTimeout(() => fetchAllSchedules(), 500);
       }
     } catch (error) {
       console.error('Error fetching schedules:', error);
       setError('فشل في جلب جداول القاعة: ' + error.message);
     }
-  }, [roomId]);
-
-  // دالة منفصلة لتحديث الجداول بعد التعديل
-  const refreshAllData = useCallback(async () => {
-    try {
-      await Promise.all([
-        fetchSchedules(),
-        fetchAllSchedules()
-      ]);
-    } catch (error) {
-      console.error('Error refreshing data:', error);
-    }
-  }, [fetchSchedules, fetchAllSchedules]);
+  };
 
   // Function to handle Excel file upload
   const handleExcelUpload = async (e) => {
@@ -305,10 +314,10 @@ const EditSchedule = () => {
       if (response.success) {
         setUploadResults(response.data);
         setShowUploadResults(true);
-        setSuccess(response.message);
+        setSuccess(getHumanMessage(response.message) || response.message || 'تم تحميل الملف بنجاح');
         fetchSchedules(); // Refresh schedules
       } else {
-        setError(response.message || 'فشل في تحميل الجدول الأسبوعي');
+        setError(getHumanMessage(response) || 'فشل في تحميل الجدول الأسبوعي');
       }
     } catch (error) {
       console.error('Error uploading Excel file:', error);
@@ -643,12 +652,26 @@ const EditSchedule = () => {
             lecture_type_display: scheduleForm.lecture_type
           };
           
+          // Log payload for debugging server errors
+          console.info('Creating schedule payload:', permanentSchedulePayload);
+          
           if (scheduleForm.use_multiple_doctors) {
             // Use multiple doctors endpoint
             response = await roomsAPI.createScheduleWithMultipleDoctors(roomId, permanentSchedulePayload);
           } else {
             // Use single doctor endpoint
             response = await roomsAPI.createSchedule(roomId, permanentSchedulePayload);
+          }
+          
+          // If backend returned success:false, surface the message to user and log details
+          if (!response || response.success === false) {
+            console.error('Create schedule failed. Server response full:', response);
+            console.error('Server message object:', response?.message);
+            console.error('Server data object:', response?.data);
+            const serverMsgFormatted = getHumanMessage(response?.message || response) || 'فشل في إنشاء الجدول';
+            setError(serverMsgFormatted);
+            setLoading(false);
+            return;
           }
           
           if (response.success) {
@@ -659,74 +682,75 @@ const EditSchedule = () => {
 
       setShowModal(false);
       resetForm();
-      refreshAllData();
+      fetchSchedules();
     } catch (error) {
-      if (error.response && error.response.status === 409) {
-        // Conflict detected
-        const conflictData = error.response.data;
-        setConflictingScheduleDetails(conflictData.conflicting_schedule);
-        setNewOriginalScheduleTime(conflictData.conflicting_schedule.start_time + ' - ' + conflictData.conflicting_schedule.end_time);
-        setNewOriginalScheduleRoom(conflictData.conflicting_schedule.room_id);
-        setShowConflictModal(true);
-
-        // Store the temporary schedule data if it was a temporary submission attempt
-        if (scheduleForm.is_temporary && isTemporarySubmissionAttempt) {
-          const temporarySchedulePayload = {
-            original_schedule_id: conflictData.conflicting_schedule.id,
-            room_id: parseInt(roomId),
-            day_of_week: scheduleForm.day_of_week,
-            temporary_start_time: scheduleForm.start_time,
-            temporary_end_time: scheduleForm.end_time,
-            subject_name: scheduleForm.subject_name.trim(),
-            instructor_name: scheduleForm.instructor_name.trim(),
-            notes: scheduleForm.notes.trim(),
-            temporary_room_id: scheduleForm.temporary_room_id ? parseInt(scheduleForm.temporary_room_id) : null,
-          };
-          setPendingTemporaryScheduleData(temporarySchedulePayload);
-        }
-      } else {
-        // Detailed error handling with specific error messages
-        console.error('Error details:', {
-          status: error.response?.status,
-          data: error.response?.data,
-          message: error.message
-        });
-
-        let errorMessage = 'فشل في حفظ الجدول';
+      console.error('Submit error:', error);
+      
+      // معالجة محسنة للأخطاء
+      if (error.response) {
+        const status = error.response.status;
+        const data = error.response.data;
         
-        if (error.response?.status === 400) {
-          // Handle 400 Bad Request errors with detailed messages
-          const errorData = error.response.data;
-          
-          if (errorData.error && typeof errorData.error === 'string') {
-            errorMessage = errorData.error;
-          } else if (errorData.message && typeof errorData.message === 'string') {
-            errorMessage = errorData.message;
-          } else if (errorData.detail && typeof errorData.detail === 'string') {
-            errorMessage = errorData.detail;
-          } else if (errorData.errors && Array.isArray(errorData.errors)) {
-            errorMessage = errorData.errors.join(', ');
-          } else {
-            // Default message for 400 errors
-            if (scheduleForm.use_multiple_doctors) {
-              errorMessage = 'خطأ في بيانات المدرسين المتعددين. تحقق من صحة البيانات المدخلة.';
-            } else {
-              errorMessage = 'خطأ في البيانات المرسلة. تحقق من صحة جميع الحقول.';
-            }
+        if (status === 409) {
+          // تعارض في الجدول
+          const conflictData = data;
+          setConflictingScheduleDetails(conflictData.conflicting_schedule);
+          setNewOriginalScheduleTime(conflictData.conflicting_schedule.start_time + ' - ' + conflictData.conflicting_schedule.end_time);
+          setNewOriginalScheduleRoom(conflictData.conflicting_schedule.room_id);
+          setShowConflictModal(true);
+
+          // Store the temporary schedule data if it was a temporary submission attempt
+          if (scheduleForm.is_temporary && isTemporarySubmissionAttempt) {
+            const temporarySchedulePayload = {
+              original_schedule_id: conflictData.conflicting_schedule.id,
+              room_id: parseInt(roomId),
+              day_of_week: scheduleForm.day_of_week,
+              temporary_start_time: scheduleForm.start_time,
+              temporary_end_time: scheduleForm.end_time,
+              subject_name: scheduleForm.subject_name.trim(),
+              instructor_name: scheduleForm.instructor_name.trim(),
+              notes: scheduleForm.notes.trim(),
+              temporary_room_id: scheduleForm.temporary_room_id ? parseInt(scheduleForm.temporary_room_id) : null,
+            };
+            setPendingTemporaryScheduleData(temporarySchedulePayload);
           }
-        } else if (error.response?.status === 409) {
-          errorMessage = 'يوجد تعارض في الجدول المحدد';
-        } else if (error.response?.status === 403) {
-          errorMessage = 'لا يوجد لديك صلاحية لتنفيذ هذا الإجراء';
-        } else if (error.response?.status === 404) {
-          errorMessage = 'القاعة أو المدرس غير موجود';
-        } else if (error.response?.status >= 500) {
-          errorMessage = 'خطأ في الخادم. يرجى المحاولة مرة أخرى';
-        } else if (error.message) {
-          errorMessage = error.message;
+        } else if (status === 400) {
+          // أخطاء في البيانات المدخلة
+          let errorMessage = 'خطأ في البيانات المدخلة:';
+          
+          if (data.message) {
+            if (typeof data.message === 'string') {
+              errorMessage = data.message;
+            } else if (data.message.doctor_conflict) {
+              const conflict = data.message.doctor_conflict;
+              errorMessage = `المدرس مشغول في هذا الوقت:
+المادة: ${conflict.subject_name || 'غير محدد'}
+المرحلة: ${stages[conflict.academic_stage] || conflict.academic_stage || 'غير محدد'}
+الوقت: ${conflict.start_time} - ${conflict.end_time}
+القاعة: ${conflict.room_name || `قاعة ${conflict.room_id}`}`;
+            } else if (data.message.time_conflict) {
+              errorMessage = 'يوجد تداخل في الأوقات مع جدول آخر في نفس القاعة';
+            } else if (data.message.validation_errors) {
+              errorMessage = 'أخطاء في التحقق من البيانات: ' + Object.values(data.message.validation_errors).join(', ');
+            }
+          } else if (data.error) {
+            errorMessage = data.error;
+          } else if (data.detail) {
+            errorMessage = data.detail;
+          }
+          
+          setError(errorMessage);
+        } else if (status === 403) {
+          setError('ليس لديك صلاحية لتنفيذ هذا الإجراء');
+        } else if (status === 404) {
+          setError('المورد المطلوب غير موجود');
+        } else {
+          setError(getHumanMessage(data) || `خطأ في الخادم (${status})`);
         }
-        
-        setError(errorMessage);
+      } else if (error.request) {
+        setError('فشل في الاتصال بالخادم. تحقق من اتصال الإنترنت');
+      } else {
+        setError(error.message || 'حدث خطأ غير متوقع');
       }
     } finally {
       setLoading(false);
@@ -800,7 +824,7 @@ const EditSchedule = () => {
         const response = await roomsAPI.deleteSchedule(roomId, scheduleId);
         if (response.success) {
           setSuccess('تم حذف الجدول بنجاح');
-          refreshAllData();
+          fetchSchedules();
         }
       } catch (error) {
         setError('فشل في حذف الجدول');
@@ -916,9 +940,9 @@ const EditSchedule = () => {
         setSuccess('تم نقل الجدول مؤقتاً بنجاح');
         setShowPostponementModal(false);
         resetForm();
-        refreshAllData();
+        fetchSchedules();
       } else {
-        setError(response.message || 'فشل في تنفيذ النقل المؤقت');
+        setError(getHumanMessage(response) || 'فشل في تنفيذ النقل المؤقت');
       }
     } catch (error) {
       console.error('Error in postponement:', error);
@@ -949,7 +973,7 @@ const EditSchedule = () => {
         });
 
         if (!createTemporaryResponse.success) {
-          throw new Error(createTemporaryResponse.message || 'فشل في إنشاء الجدول المؤقت بعد حل التعارض.');
+          throw new Error(getHumanMessage(createTemporaryResponse.message) || 'فشل في إنشاء الجدول المؤقت بعد حل التعارض.');
         }
         setPendingTemporaryScheduleData(null);
       }
@@ -957,7 +981,7 @@ const EditSchedule = () => {
       setSuccess('تم حل التعارض وإنشاء الجدول المؤقت بنجاح.');
       setShowConflictModal(false);
       resetForm();
-      refreshAllData();
+      fetchSchedules();
 
     } catch (error) {
       setError(error.response?.data?.message || error.message || 'فشل في حل التعارض.');
@@ -1034,6 +1058,57 @@ const EditSchedule = () => {
     }
     // Default to theoretical for anything else
     return 'theoretical';
+  };
+
+  // Helper to convert possible server response objects into readable strings
+  const getHumanMessage = (val) => {
+    if (val === null || val === undefined) return null;
+    if (typeof val === 'string') return val;
+
+    // If it's an object, try common nested fields first
+    if (typeof val === 'object') {
+      // If top-level is the full response object
+      if ('success' in val || 'status' in val) {
+        // Try message field
+        const msg = val.message;
+        if (msg) {
+          const m = getHumanMessage(msg);
+          if (m) return m;
+        }
+        // Try data field
+        const d = val.data;
+        if (d) {
+          const dm = getHumanMessage(d);
+          if (dm) return dm;
+        }
+      }
+
+      // Common shapes inside message/data
+      if (val.message && typeof val.message === 'object') {
+        const inner = val.message;
+        if (inner.message && typeof inner.message === 'string') return inner.message;
+        if (inner.error && typeof inner.error === 'string') return inner.error;
+        if (inner.detail && typeof inner.detail === 'string') return inner.detail;
+        if (inner.hint && typeof inner.hint === 'string') return inner.hint;
+      }
+
+      if (val.error && typeof val.error === 'string') return val.error;
+      if (val.detail && typeof val.detail === 'string') return val.detail;
+
+      // If object contains arrays of errors or validations
+      if (Array.isArray(val.errors) && val.errors.length > 0) {
+        try { return val.errors.join('; '); } catch (e) {}
+      }
+
+      // As a last resort, stringify to give something readable
+      try {
+        return JSON.stringify(val);
+      } catch (e) {
+        return String(val);
+      }
+    }
+
+    return String(val);
   };
 
   return (
@@ -1451,6 +1526,9 @@ const EditSchedule = () => {
                     >
                       <option value={1}>الشعبة الأولى</option>
                       <option value={2}>الشعبة الثانية</option>
+                      {scheduleForm.academic_stage === 'second' && (
+                        <option value={3}>الشعبة الثالثة</option>
+                      )}
                     </Form.Select>
                   </Form.Group>
                 </Col>
@@ -1470,6 +1548,7 @@ const EditSchedule = () => {
                       <option value="B">كروب B</option>
                       <option value="C">كروب C</option>
                       <option value="D">كروب D</option>
+                      <option value="E">كروب E</option>
                     </Form.Select>
                   </Form.Group>
                 </Col>
@@ -1509,46 +1588,62 @@ const EditSchedule = () => {
                 <Col md={12}>
                   <Form.Group className="mb-3">
                     <Form.Label>المدرس *</Form.Label>
+                    <DoctorSearch value={doctorSearchTerm} onChange={setDoctorSearchTerm} />
                     <Form.Select
                       value={scheduleForm.doctor_id}
                       onChange={(e) => setScheduleForm({...scheduleForm, doctor_id: e.target.value})}
                       required
                     >
                       <option value="">اختر مدرس</option>
-                      {filteredDoctorsByDept.map(doctor => {
-                        const availabilityInfo = doctorAvailability[doctor.id] || { available: true };
-                        const isAvailable = availabilityInfo.available;
+                      {filteredDoctors.map(doctor => {
+                        const isAvailable = doctorAvailability[doctor.id] !== false;
+                        const conflict = conflictDetails[doctor.id];
+                        
                         return (
                           <option 
                             key={doctor.id} 
                             value={doctor.id}
-                            style={{ color: isAvailable ? 'inherit' : '#dc3545' }}
+                            style={{ 
+                              color: isAvailable ? 'inherit' : '#dc3545',
+                              backgroundColor: isAvailable ? 'inherit' : '#fff5f5'
+                            }}
                           >
-                            {doctor.name} {!isAvailable ? '⚠️ (غير متوفر - لديه محاضرة)' : ''}
+                            {doctor.name} {!isAvailable ? ' ⚠️ (مشغول)' : ''}
                           </option>
                         );
                       })}
                     </Form.Select>
-                    {scheduleForm.doctor_id && doctorAvailability[scheduleForm.doctor_id] && !doctorAvailability[scheduleForm.doctor_id].available && (
-                      <Alert variant="warning" className="mt-2">
-                        <i className="fas fa-exclamation-triangle me-2"></i>
-                        <strong>تحذير:</strong> هذا الدكتور لديه محاضرة أخرى في نفس الوقت واليوم.
-                        {doctorAvailability[scheduleForm.doctor_id].conflict && (
-                          <div className="mt-2 small">
-                            <strong>تفاصيل التعارض:</strong>
-                            <ul className="mb-0 mt-1">
-                              <li><strong>المادة:</strong> {doctorAvailability[scheduleForm.doctor_id].conflict.subject}</li>
-                              <li><strong>المرحلة:</strong> {doctorAvailability[scheduleForm.doctor_id].conflict.stage}</li>
-                              <li><strong>الوقت:</strong> {doctorAvailability[scheduleForm.doctor_id].conflict.time}</li>
-                              <li><strong>القاعة:</strong> {doctorAvailability[scheduleForm.doctor_id].conflict.room}</li>
-                            </ul>
-                          </div>
-                        )}
-                        <div className="mt-2">
-                          يرجى اختيار وقت آخر أو دكتور آخر.
-                        </div>
-                      </Alert>
-                    )}
+                    
+                    {/* إظهار تفاصيل التعارض للمدرس المحدد */}
+                    {(() => {
+                      if (scheduleForm.doctor_id) {
+                        const doctorId = parseInt(scheduleForm.doctor_id);
+                        const isUnavailable = doctorAvailability[doctorId] === false;
+                        const conflict = conflictDetails[doctorId];
+                        
+                        if (isUnavailable && conflict) {
+                          return (
+                            <Alert variant="warning" className="mt-2 mb-2" style={{ fontSize: '0.85rem' }}>
+                              <div className="d-flex align-items-center">
+                                <i className="fas fa-exclamation-triangle me-2"></i>
+                                <div>
+                                  <strong>تنبيه: المدرس مشغول في هذا الوقت</strong>
+                                  <div className="small mt-1">
+                                    <div><strong>المادة:</strong> {conflict.subject}</div>
+                                    <div><strong>المرحلة:</strong> {conflict.stage}</div>
+                                    <div><strong>الوقت:</strong> {conflict.time}</div>
+                                    <div><strong>القاعة:</strong> {conflict.room}</div>
+                                    <div><strong>اليوم:</strong> {conflict.day}</div>
+                                    <div><strong>نوع الدراسة:</strong> {conflict.studyType}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </Alert>
+                          );
+                        }
+                      }
+                      return null;
+                    })()}
                   </Form.Group>
                 </Col>
               </Row>
@@ -1559,28 +1654,18 @@ const EditSchedule = () => {
                   <Col md={12}>
                     <Form.Group className="mb-3">
                       <Form.Label>اختيار المدرسين *</Form.Label>
+                      <DoctorSearch value={doctorSearchTerm} onChange={setDoctorSearchTerm} />
                       <div className="border rounded p-3" style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                        {filteredDoctorsByDept.map(doctor => {
-                          const availabilityInfo = doctorAvailability[doctor.id] || { available: true };
-                          const isAvailable = availabilityInfo.available;
-                          const isSelected = scheduleForm.doctor_ids.includes(doctor.id);
+                        {filteredDoctors.map(doctor => {
+                          const isAvailable = doctorAvailability[doctor.id] !== false;
+                          const conflict = conflictDetails[doctor.id];
                           
                           return (
                             <div key={doctor.id} className="mb-2">
                               <Form.Check 
                                 type="checkbox"
                                 id={`doctor-${doctor.id}`}
-                                label={
-                                  <span style={{ color: isAvailable ? 'inherit' : '#dc3545' }}>
-                                    {doctor.name} 
-                                    {!isAvailable && (
-                                      <Badge bg="danger" className="ms-2" style={{ fontSize: '0.7em' }}>
-                                        غير متوفر - لديه محاضرة
-                                      </Badge>
-                                    )}
-                                  </span>
-                                }
-                                checked={isSelected}
+                                checked={scheduleForm.doctor_ids.includes(doctor.id)}
                                 onChange={(e) => {
                                   const doctorId = doctor.id;
                                   let newDoctorIds;
@@ -1610,39 +1695,38 @@ const EditSchedule = () => {
                                     primary_doctor_id: scheduleForm.primary_doctor_id || (newDoctorIds.length > 0 ? newDoctorIds[0] : '')
                                   });
                                 }}
+                                label={
+                                  <span style={{ color: isAvailable ? 'inherit' : '#dc3545' }}>
+                                    {doctor.name} 
+                                    {!isAvailable && <span className="text-warning ms-1">⚠️</span>}
+                                  </span>
+                                }
                               />
-                              {!isAvailable && availabilityInfo.conflict && isSelected && (
-                                <div className="small text-muted ms-4 mt-1">
-                                  <i className="fas fa-info-circle me-1"></i>
-                                  محاضرة: {availabilityInfo.conflict.subject} ({availabilityInfo.conflict.stage}) - {availabilityInfo.conflict.time}
-                                </div>
+                              {!isAvailable && conflict && (
+                                <Alert variant="warning" className="ms-4 mt-2 mb-2" style={{ fontSize: '0.85rem' }}>
+                                  <div className="d-flex align-items-center">
+                                    <i className="fas fa-exclamation-triangle me-2"></i>
+                                    <div>
+                                      <strong>تنبيه: المدرس مشغول في هذا الوقت</strong>
+                                      <div className="small mt-1">
+                                        <div><strong>المادة:</strong> {conflict.subject}</div>
+                                        <div><strong>المرحلة:</strong> {conflict.stage}</div>
+                                        <div><strong>الوقت:</strong> {conflict.time}</div>
+                                        <div><strong>القاعة:</strong> {conflict.room}</div>
+                                        <div><strong>اليوم:</strong> {conflict.day}</div>
+                                        <div><strong>نوع الدراسة:</strong> {conflict.studyType}</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </Alert>
                               )}
                             </div>
                           );
                         })}
                       </div>
                       <Form.Text className="text-muted">
-                        يمكنك اختيار أكثر من مدرس للمادة الواحدة. الدكاترة غير المتوفرين لديهم محاضرة في نفس الوقت.
+                        يمكنك اختيار أكثر من مدرس للمادة الواحدة
                       </Form.Text>
-                      {scheduleForm.doctor_ids.some(id => doctorAvailability[id] && !doctorAvailability[id].available) && (
-                        <Alert variant="warning" className="mt-2">
-                          <i className="fas fa-exclamation-triangle me-2"></i>
-                          <strong>تحذير:</strong> بعض الدكاترة المختارين لديهم محاضرات أخرى في نفس الوقت:
-                          <ul className="mb-0 mt-2">
-                            {scheduleForm.doctor_ids
-                              .filter(id => doctorAvailability[id] && !doctorAvailability[id].available)
-                              .map(id => {
-                                const doctor = doctors.find(d => d.id === id);
-                                const conflict = doctorAvailability[id]?.conflict;
-                                return doctor && conflict ? (
-                                  <li key={id} className="small">
-                                    <strong>{doctor.name}:</strong> {conflict.subject} ({conflict.stage}) في {conflict.room}
-                                  </li>
-                                ) : null;
-                              })}
-                          </ul>
-                        </Alert>
-                      )}
                     </Form.Group>
                   </Col>
                 </Row>
@@ -1684,15 +1768,39 @@ const EditSchedule = () => {
                           {scheduleForm.doctor_ids.map(doctorId => {
                             const doctor = doctors.find(d => d.id === doctorId);
                             const isPrimary = doctorId === scheduleForm.primary_doctor_id;
+                            const isAvailable = doctorAvailability[doctorId] !== false;
+                            const conflict = conflictDetails[doctorId];
+                            
                             return doctor ? (
                               <li key={doctorId}>
-                                {doctor.name}
-                                {isPrimary && <Badge bg="primary" className="ms-2">أساسي</Badge>}
+                                <span style={{ color: isAvailable ? 'inherit' : '#dc3545' }}>
+                                  {doctor.name}
+                                  {isPrimary && <Badge bg="primary" className="ms-2">أساسي</Badge>}
+                                  {!isAvailable && <span className="text-warning ms-1">⚠️ مشغول</span>}
+                                </span>
+                                {!isAvailable && conflict && (
+                                  <div className="small text-muted mt-1">
+                                    محاضرة: {conflict.subject} - {conflict.stage} ({conflict.time}) في {conflict.room}
+                                  </div>
+                                )}
                               </li>
                             ) : null;
                           })}
                         </ul>
                       </Alert>
+                      
+                      {/* تنبيه إضافي إذا كان هناك مدرسون مشغولون محددون */}
+                      {scheduleForm.doctor_ids.some(id => doctorAvailability[id] === false) && (
+                        <Alert variant="warning">
+                          <div className="d-flex align-items-center">
+                            <i className="fas fa-exclamation-triangle me-2"></i>
+                            <div>
+                              <strong>تنبيه:</strong> بعض المدرسين المحددين مشغولين في هذا الوقت. 
+                              يمكنك المتابعة ولكن قد يحدث تداخل في الجداول.
+                            </div>
+                          </div>
+                        </Alert>
+                      )}
                     </Col>
                   </Row>
                 )}
