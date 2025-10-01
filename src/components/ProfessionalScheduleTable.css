@@ -1,0 +1,2160 @@
+/* Professional Schedule Table Styles - Enhanced & Fully Responsive */
+.professional-schedule-container {
+  width: 100%;
+  max-width: 100vw;
+  margin: 0 auto;
+  padding: clamp(10px, 2vw, 25px);
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: clamp(8px, 1.5vw, 15px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  position: relative;
+}
+
+.professional-schedule-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 200% 0; }
+  50% { background-position: -200% 0; }
+}
+
+/* Header Styles */
+.schedule-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: clamp(12px, 2.5vw, 20px) clamp(15px, 3vw, 25px);
+  border-radius: clamp(8px, 1.5vw, 12px) clamp(8px, 1.5vw, 12px) 0 0;
+  margin-bottom: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.schedule-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: headerShine 4s ease-in-out infinite;
+}
+
+@keyframes headerShine {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+.header-content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.schedule-title {
+  margin: 0 0 clamp(8px, 1.5vw, 12px) 0;
+  font-size: clamp(1rem, 3vw, 1.6rem);
+  font-weight: 800;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.room-info {
+  margin-top: clamp(6px, 1.2vw, 10px);
+}
+
+.room-badge {
+  font-size: clamp(0.8rem, 1.8vw, 1rem);
+  padding: clamp(6px, 1.2vw, 10px) clamp(12px, 2.5vw, 18px);
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-weight: 600;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.room-badge:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Table Container */
+.schedule-grid {
+  overflow-x: auto;
+  background: white;
+  border-radius: 0 0 clamp(8px, 1.5vw, 12px) clamp(8px, 1.5vw, 12px);
+}
+
+/* Mobile Cards Layout - Hidden by default, shown only on mobile */
+.mobile-room-schedule-cards {
+  display: none;
+}
+
+/* Mobile Responsive Styles */
+/* Desktop styles - visible on larger screens */
+@media (min-width: 769px) {
+  .desktop-table-container {
+    display: block !important;
+  }
+  
+  .mobile-room-schedule-cards {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Hide only the schedule tables that belong to the professional schedule component */
+  .professional-schedule-container .desktop-table-container,
+  .professional-schedule-container .desktop-schedule-table,
+  .professional-schedule-container .schedule-grid,
+  .professional-schedule-container .professional-table,
+  .professional-schedule-container table.desktop-schedule-table,
+  .professional-schedule-container table[style*="width: 100%"],
+  .professional-schedule-container .schedule-container table {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    max-height: 0 !important;
+  }
+  
+  /* Avoid globally hiding all .table-responsive elements — scope it to this component */
+  .professional-schedule-container .desktop-table-container,
+  .professional-schedule-container .table-responsive {
+    display: none !important;
+    height: 0 !important;
+    opacity: 0 !important;
+  }
+   
+   /* Force show mobile cards layout */
+   .mobile-room-schedule-cards {
+     display: block !important;
+     visibility: visible !important;
+     opacity: 1 !important;
+     padding: 15px;
+     background: white;
+     border-radius: 0 0 12px 12px;
+   }
+  
+  .mobile-room-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .mobile-room-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  }
+  
+  .mobile-room-card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 15px;
+    border-bottom: none;
+  }
+  
+  .mobile-room-card-day {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  }
+  
+  .mobile-room-card-body {
+    padding: 0;
+  }
+  
+  .mobile-room-schedule-item {
+    padding: 15px;
+    border-bottom: 1px solid #f8f9fa;
+    position: relative;
+  }
+  
+  .mobile-room-schedule-item:last-child {
+    border-bottom: none;
+  }
+  
+  .mobile-room-schedule-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .mobile-room-subject-header {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .mobile-room-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .mobile-room-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  
+  .mobile-room-info-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .mobile-room-info-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+  }
+  
+  .mobile-room-stage-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  
+  .mobile-room-doctors-list {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f3f4f6;
+  }
+  
+  .mobile-room-doctor-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-size: 0.85rem;
+  }
+  
+  .mobile-room-primary-doctor {
+    background: rgba(34, 197, 94, 0.1);
+    padding: 2px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+  }
+  
+  .mobile-room-empty-slot {
+    text-align: center;
+    padding: 30px 15px;
+    color: #9ca3af;
+    font-style: italic;
+  }
+  
+  .mobile-room-empty-slot i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 10px;
+    opacity: 0.5;
+  }
+  
+  /* Postponed/Moved indicators for mobile */
+  .mobile-room-postponed-indicator {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 6px;
+    display: inline-block;
+  }
+  
+  .mobile-room-moved-indicator {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 6px;
+    display: inline-block;
+  }
+}
+
+/* Custom Scrollbar */
+.schedule-grid::-webkit-scrollbar {
+  height: clamp(8px, 1.2vw, 12px);
+}
+
+.schedule-grid::-webkit-scrollbar-track {
+  background: #f1f3f4;
+  border-radius: 10px;
+}
+
+.schedule-grid::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.schedule-grid::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #5a6fd8, #6a4190);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Professional Table */
+.professional-table {
+  margin: 0;
+  width: 100%;
+  min-width: clamp(800px, 120vw, 1400px);
+  border-collapse: collapse;
+  font-size: clamp(0.7rem, 1.4vw, 0.9rem);
+  background: white;
+}
+
+.professional-table th,
+.professional-table td {
+  border: 2px solid #e1e8ed;
+  vertical-align: middle;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Header Row */
+.header-row {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-row th {
+  border-color: #4a5568;
+  font-weight: 700;
+  text-align: center;
+  padding: clamp(10px, 2vw, 15px) clamp(6px, 1.2vw, 10px);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.3px;
+}
+
+/* Day Header */
+.day-header {
+  width: clamp(100px, 15vw, 140px);
+  background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+  color: white;
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  font-weight: 800;
+  position: sticky;
+  left: 0;
+  z-index: 11;
+}
+
+/* Time Headers */
+.time-header {
+  width: clamp(150px, 20vw, 220px);
+  text-align: center;
+  background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+  padding: clamp(8px, 1.5vw, 12px);
+}
+
+.time-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(2px, 0.4vw, 4px);
+}
+
+.time-range {
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.time-label {
+  font-size: clamp(0.6rem, 1.2vw, 0.75rem);
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+
+/* Day Cells */
+.day-cell {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  font-weight: 800;
+  text-align: center;
+  padding: clamp(12px, 2.5vw, 18px) clamp(8px, 1.5vw, 12px);
+  width: clamp(100px, 15vw, 140px);
+  position: sticky;
+  left: 0;
+  z-index: 9;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.day-content {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3px, 0.6vw, 5px);
+}
+
+.day-name-ar {
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  font-weight: 800;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.day-name-en {
+  font-size: clamp(0.65rem, 1.3vw, 0.8rem);
+  opacity: 0.95;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+}
+
+/* Schedule Cells */
+.schedule-cell {
+  padding: clamp(6px, 1.2vw, 10px);
+  background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
+  height: clamp(100px, 15vw, 140px);
+  vertical-align: top;
+  border-color: #cbd5e0;
+  transition: all 0.3s ease;
+}
+
+.schedule-cell:hover {
+  background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3px, 0.6vw, 5px);
+  overflow: hidden;
+}
+
+/* Subject Blocks */
+.subject-block {
+  border: 1px solid #e2e8f0;
+  border-radius: clamp(6px, 1vw, 10px);
+  padding: clamp(6px, 1.2vw, 10px);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border-left: 4px solid transparent;
+}
+
+.subject-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.subject-block:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: #cbd5e0;
+}
+
+.subject-block:hover::before {
+  opacity: 1;
+}
+
+.subject-header {
+  font-size: clamp(0.7rem, 1.4vw, 0.85rem);
+  font-weight: 800;
+  color: #2d3748;
+  margin-bottom: clamp(3px, 0.6vw, 5px);
+  text-align: center;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: clamp(3px, 0.6vw, 5px);
+  line-height: 1.3;
+  position: relative;
+  z-index: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  white-space: normal;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.instructor-info {
+  font-size: clamp(0.6rem, 1.2vw, 0.75rem);
+  line-height: 1.3;
+  color: #4a5568;
+  position: relative;
+  z-index: 1;
+}
+
+.instructor-name {
+  font-weight: 700;
+  color: #2b6cb0;
+  margin-bottom: clamp(2px, 0.4vw, 3px);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.additional-info,
+.class-info,
+.department-info {
+  margin-bottom: 1px;
+  color: #718096;
+  font-weight: 500;
+}
+
+/* Empty Cell */
+.empty-cell {
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    #f7fafc,
+    #f7fafc 8px,
+    #ffffff 8px,
+    #ffffff 16px
+  );
+  opacity: 0.4;
+  border-radius: clamp(4px, 0.8vw, 6px);
+  position: relative;
+}
+
+.empty-cell::after {
+  content: '—';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #a0aec0;
+  font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+  font-weight: 300;
+}
+
+/* Stage Colors with Enhanced Styling */
+.subject-block[style*="rgb(227, 242, 253)"] {
+  border-left: 4px solid #3182ce;
+  background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+}
+
+.subject-block[style*="rgb(232, 245, 232)"] {
+  border-left: 4px solid #38a169;
+  background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+}
+
+.subject-block[style*="rgb(255, 243, 224)"] {
+  border-left: 4px solid #dd6b20;
+  background: linear-gradient(135deg, #fffaf0 0%, #fbd38d 100%);
+}
+
+.subject-block[style*="rgb(255, 235, 238)"] {
+  border-left: 4px solid #e53e3e;
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+}
+
+/* Enhanced Responsive Design */
+@media (max-width: 1400px) {
+  .professional-schedule-container {
+    padding: clamp(8px, 1.5vw, 20px);
+  }
+  
+  .professional-table {
+    min-width: 1000px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .schedule-title {
+    font-size: clamp(0.9rem, 2.5vw, 1.3rem);
+  }
+  
+  .professional-table {
+    font-size: clamp(0.65rem, 1.3vw, 0.8rem);
+    min-width: 900px;
+  }
+  
+  .subject-header {
+    font-size: clamp(0.65rem, 1.3vw, 0.8rem);
+  }
+  
+  .instructor-info {
+    font-size: clamp(0.55rem, 1.1vw, 0.7rem);
+  }
+  
+  .schedule-cell {
+    height: clamp(90px, 12vw, 120px);
+  }
+}
+
+@media (max-width: 992px) {
+  .professional-schedule-container {
+    border-radius: clamp(6px, 1vw, 10px);
+  }
+  
+  .schedule-header {
+    padding: clamp(10px, 2vw, 16px) clamp(12px, 2.5vw, 20px);
+  }
+  
+  .schedule-title {
+    font-size: clamp(0.85rem, 2.2vw, 1.2rem);
+    line-height: 1.3;
+  }
+  
+  .professional-table {
+    min-width: 800px;
+    font-size: clamp(0.6rem, 1.2vw, 0.75rem);
+  }
+  
+  .time-header {
+    width: clamp(130px, 18vw, 180px);
+  }
+  
+  .day-cell {
+    width: clamp(90px, 12vw, 120px);
+  }
+  
+  .schedule-cell {
+    height: clamp(80px, 10vw, 110px);
+    padding: clamp(4px, 0.8vw, 8px);
+  }
+  
+  .subject-block {
+    padding: clamp(4px, 0.8vw, 8px);
+    border-radius: clamp(4px, 0.8vw, 8px);
+  }
+}
+
+/* Enhanced Mobile Text Visibility and Wrapping */
+@media (max-width: 768px) {
+  .schedule-cell {
+    height: auto !important;
+    min-height: clamp(80px, 12vw, 120px);
+    padding: clamp(4px, 0.8vw, 8px);
+  }
+  
+  .subject-block {
+    padding: clamp(6px, 1.2vw, 10px);
+    margin-bottom: clamp(4px, 0.8vw, 8px);
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .subject-header {
+    font-size: clamp(0.65rem, 1.5vw, 0.8rem) !important;
+    line-height: 1.3 !important;
+    margin-bottom: clamp(4px, 0.8vw, 6px) !important;
+    padding-bottom: clamp(3px, 0.6vw, 5px) !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    max-height: none !important;
+    line-clamp: unset !important;
+  }
+  
+  .instructor-info {
+    font-size: clamp(0.55rem, 1.2vw, 0.7rem) !important;
+    line-height: 1.2 !important;
+  }
+  
+  .instructor-name {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+  }
+  
+  .schedule-header {
+    padding: clamp(8px, 1.5vw, 14px) clamp(10px, 2vw, 16px);
+    border-radius: clamp(6px, 1vw, 10px) clamp(6px, 1vw, 10px) 0 0;
+  }
+  
+  .schedule-title {
+    font-size: clamp(0.8rem, 2vw, 1.1rem);
+    margin-bottom: clamp(6px, 1vw, 10px);
+  }
+  
+  .room-badge {
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+    padding: clamp(4px, 0.8vw, 8px) clamp(8px, 1.5vw, 14px);
+  }
+  
+  .professional-table {
+    min-width: 700px;
+    font-size: clamp(0.55rem, 1.1vw, 0.7rem);
+  }
+  
+  .header-row th {
+    padding: clamp(6px, 1.2vw, 10px) clamp(4px, 0.8vw, 6px);
+  }
+  
+  .time-header {
+    width: clamp(110px, 16vw, 150px);
+  }
+  
+  .day-header,
+  .day-cell {
+    width: clamp(80px, 10vw, 100px);
+  }
+  
+  .day-name-ar {
+    font-size: clamp(0.75rem, 1.5vw, 0.95rem);
+  }
+  
+  .day-name-en {
+    font-size: clamp(0.55rem, 1.1vw, 0.7rem);
+  }
+  
+  .time-range {
+    font-size: clamp(0.65rem, 1.3vw, 0.8rem);
+  }
+  
+  .time-label {
+    font-size: clamp(0.5rem, 1vw, 0.65rem);
+  }
+  
+  .schedule-cell {
+    height: clamp(70px, 8vw, 90px);
+    padding: clamp(3px, 0.6vw, 6px);
+  }
+  
+  .subject-block {
+    padding: clamp(3px, 0.6vw, 6px);
+    border-radius: clamp(3px, 0.6vw, 6px);
+  }
+  
+  .subject-header {
+    font-size: clamp(0.55rem, 1.1vw, 0.7rem);
+    margin-bottom: clamp(2px, 0.4vw, 3px);
+    padding-bottom: clamp(2px, 0.4vw, 3px);
+    line-height: 1.4;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    text-align: center;
+  }
+  
+  .instructor-info {
+    font-size: clamp(0.5rem, 1vw, 0.65rem);
+  }
+  
+  .instructor-name {
+    margin-bottom: clamp(1px, 0.2vw, 2px);
+  }
+}
+
+@media (max-width: 576px) {
+  .professional-schedule-container {
+    padding: clamp(4px, 0.8vw, 10px);
+    margin: clamp(2px, 0.5vw, 5px);
+    border-radius: clamp(4px, 0.8vw, 8px);
+  }
+  
+  .schedule-cell {
+    height: auto !important;
+    min-height: clamp(70px, 10vw, 100px);
+    padding: clamp(3px, 0.6vw, 6px);
+  }
+  
+  .subject-block {
+    padding: clamp(4px, 0.8vw, 8px);
+    margin-bottom: clamp(3px, 0.6vw, 6px);
+    border-radius: clamp(4px, 0.8vw, 6px);
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .subject-header {
+    font-size: clamp(0.6rem, 1.4vw, 0.75rem) !important;
+    line-height: 1.2 !important;
+    margin-bottom: clamp(3px, 0.6vw, 5px) !important;
+    padding-bottom: clamp(2px, 0.4vw, 4px) !important;
+    font-weight: 700 !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    max-height: none !important;
+    line-clamp: unset !important;
+  }
+  
+  .instructor-info {
+    font-size: clamp(0.5rem, 1.1vw, 0.65rem) !important;
+    line-height: 1.1 !important;
+  }
+  
+  .instructor-name {
+    margin-bottom: clamp(1px, 0.2vw, 2px);
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+  }
+  
+  .schedule-header {
+    padding: clamp(6px, 1.2vw, 12px) clamp(8px, 1.5vw, 14px);
+    border-radius: clamp(4px, 0.8vw, 8px) clamp(4px, 0.8vw, 8px) 0 0;
+  }
+  
+  .schedule-title {
+    font-size: clamp(0.75rem, 1.8vw, 1rem);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  
+  .room-badge {
+    font-size: clamp(0.6rem, 1.3vw, 0.8rem);
+    padding: clamp(3px, 0.6vw, 6px) clamp(6px, 1.2vw, 10px);
+    border-radius: 15px;
+  }
+  
+  .professional-table {
+    min-width: 600px;
+    font-size: clamp(0.5rem, 1vw, 0.65rem);
+  }
+  
+  .header-row th {
+    padding: clamp(4px, 0.8vw, 8px) clamp(2px, 0.5vw, 4px);
+    font-size: clamp(0.5rem, 1vw, 0.65rem);
+  }
+  
+  .time-header {
+    width: clamp(90px, 14vw, 120px);
+    padding: clamp(4px, 0.8vw, 8px);
+  }
+  
+  .day-header,
+  .day-cell {
+    width: clamp(60px, 8vw, 80px);
+    padding: clamp(6px, 1.2vw, 10px) clamp(4px, 0.8vw, 6px);
+  }
+  
+  .day-name-ar {
+    font-size: clamp(0.65rem, 1.3vw, 0.8rem);
+  }
+  
+  .day-name-en {
+    font-size: clamp(0.45rem, 0.9vw, 0.6rem);
+    letter-spacing: 0.3px;
+  }
+  
+  .time-range {
+    font-size: clamp(0.55rem, 1.1vw, 0.7rem);
+    line-height: 1;
+  }
+  
+  .time-label {
+    font-size: clamp(0.4rem, 0.8vw, 0.55rem);
+  }
+  
+  .schedule-cell {
+    height: clamp(60px, 6vw, 80px);
+    padding: clamp(2px, 0.4vw, 4px);
+  }
+  
+  .subject-block {
+    padding: clamp(3px, 0.6vw, 6px);
+    border-radius: clamp(3px, 0.6vw, 6px);
+  }
+  
+  .subject-header {
+    font-size: clamp(0.55rem, 1.1vw, 0.7rem);
+    margin-bottom: clamp(2px, 0.4vw, 3px);
+    padding-bottom: clamp(2px, 0.4vw, 3px);
+    line-height: 1.4;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    text-align: center;
+  }
+  
+  .instructor-info {
+    font-size: clamp(0.5rem, 1vw, 0.65rem);
+  }
+  
+  .instructor-name {
+    margin-bottom: clamp(1px, 0.2vw, 2px);
+  }
+}
+
+@media (max-width: 360px) {
+  .professional-schedule-container {
+    padding: 0.25rem;
+    margin: 0.25rem;
+    border-radius: 8px;
+  }
+  
+  .schedule-header {
+    padding: 0.75rem 0.5rem;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .schedule-title {
+    font-size: clamp(0.9rem, 5vw, 1.2rem);
+    margin-bottom: 0.25rem;
+    line-height: 1.1;
+  }
+  
+  .room-badge {
+    font-size: clamp(0.65rem, 3vw, 0.75rem);
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .professional-table {
+    min-width: 100%;
+    font-size: clamp(0.55rem, 2.5vw, 0.65rem);
+    border-collapse: separate;
+    border-spacing: 0.5px;
+  }
+  
+  .header-row th {
+    padding: 0.4rem 0.15rem;
+    font-size: clamp(0.6rem, 2.5vw, 0.7rem);
+  }
+  
+  .time-header {
+    width: 50px;
+    min-width: 50px;
+    font-size: clamp(0.5rem, 2.2vw, 0.6rem);
+    padding: 0.3rem 0.1rem;
+  }
+  
+  .day-header,
+  .day-cell {
+    width: 35px;
+    min-width: 35px;
+    padding: 0.3rem 0.1rem;
+  }
+  
+  .day-name-ar {
+    font-size: clamp(0.55rem, 2.5vw, 0.65rem);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+  
+  .day-name-en {
+    display: none; /* Hide English names on very small screens */
+  }
+  
+  .schedule-cell {
+    height: auto;
+    min-height: 45px;
+    padding: 0.25rem 0.1rem;
+  }
+  
+  .subject-block {
+    padding: 0.3rem;
+    margin-bottom: 0.15rem;
+    border-radius: 6px;
+    font-size: clamp(0.5rem, 2.2vw, 0.6rem);
+    line-height: 1.1;
+  }
+  
+  .subject-header {
+    font-size: clamp(0.55rem, 2.5vw, 0.65rem);
+    margin-bottom: 0.15rem;
+    padding-bottom: 0.1rem;
+    line-height: 1.3;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    text-align: center;
+  }
+  
+  .instructor-info {
+    font-size: clamp(0.45rem, 2vw, 0.55rem);
+  }
+  
+  .instructor-name {
+    margin-bottom: 0.05rem;
+  }
+  
+  .additional-info,
+  .class-info,
+  .department-info {
+    font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+    margin-bottom: 0;
+  }
+  
+  /* Reduce spacing and optimize for touch */
+  .professional-table,
+  .schedule-grid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Landscape orientation on mobile devices */
+@media (max-width: 768px) and (orientation: landscape) {
+  .schedule-cell {
+    height: clamp(40px, 8vw, 60px) !important;
+    min-height: 40px;
+  }
+  
+  .subject-block {
+    padding: clamp(2px, 1vw, 4px) !important;
+    font-size: clamp(0.6rem, 1.5vw, 0.7rem) !important;
+    margin-bottom: clamp(2px, 0.5vw, 4px);
+  }
+  
+  .modal-dialog {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  
+  .professional-schedule-container {
+    padding: clamp(4px, 1vw, 8px);
+  }
+}
+
+/* Print Styles - Enhanced */
+@media print {
+  .professional-schedule-container {
+    box-shadow: none;
+    background: white !important;
+    padding: 10px;
+    page-break-inside: avoid;
+  }
+  
+  .schedule-header {
+    background: #343a40 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    page-break-after: avoid;
+  }
+  
+  .header-row {
+    background: #495057 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .day-cell {
+    background: #3498db !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .subject-block {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    page-break-inside: avoid;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  }
+  
+  .professional-table {
+    font-size: 8pt;
+  }
+  
+  .schedule-title {
+    font-size: 14pt;
+  }
+  
+  .subject-header {
+    font-size: 7pt;
+  }
+  
+  .instructor-info {
+    font-size: 6pt;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .professional-schedule-container {
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    color: #e2e8f0;
+  }
+  
+  .schedule-grid {
+    background: #2d3748;
+  }
+  
+  .professional-table {
+    background: #2d3748;
+    color: #e2e8f0;
+  }
+  
+  .professional-table th,
+  .professional-table td {
+    border-color: #4a5568;
+  }
+  
+  .schedule-cell {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  }
+  
+    .subject-block {
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    border-color: #718096;
+    color: #e2e8f0;
+  }
+  
+  .subject-header {
+    color: #f7fafc;
+    border-bottom-color: #718096;
+  }
+  
+  .instructor-name {
+    color: #63b3ed;
+  }
+  
+  .additional-info,
+  .class-info,
+  .department-info {
+    color: #a0aec0;
+  }
+  
+  .empty-cell {
+    background: repeating-linear-gradient(
+      45deg,
+      #2d3748,
+      #2d3748 8px,
+      #1a202c 8px,
+      #1a202c 16px
+    );
+  }
+  
+  .empty-cell::after {
+    color: #718096;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .professional-schedule-container {
+    border: 3px solid #000;
+  }
+  
+  .schedule-header {
+    background: #000 !important;
+    color: #fff !important;
+    border: 2px solid #fff;
+  }
+  
+  .header-row {
+    background: #333 !important;
+    color: #fff !important;
+  }
+  
+  .day-cell {
+    background: #000 !important;
+    color: #fff !important;
+    border: 2px solid #fff;
+  }
+  
+  .subject-block {
+    background: #fff !important;
+    color: #000 !important;
+    border: 2px solid #000 !important;
+  }
+  
+  .subject-header {
+    color: #000 !important;
+    border-bottom: 2px solid #000 !important;
+  }
+  
+  .instructor-name {
+    color: #000 !important;
+    font-weight: 900 !important;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .professional-schedule-container::before {
+    animation: none;
+  }
+  
+  .schedule-header::before {
+    animation: none;
+  }
+  
+  .subject-block:hover {
+    transform: none;
+  }
+  
+  .schedule-cell:hover {
+    transform: none;
+  }
+}
+
+/* Focus Styles for Accessibility */
+.subject-block:focus,
+.schedule-cell:focus {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
+  z-index: 100;
+  position: relative;
+}
+
+.subject-block:focus-visible,
+.schedule-cell:focus-visible {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Loading State */
+.schedule-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.schedule-loading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Error State */
+.schedule-error {
+  background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+  border: 2px solid #e53e3e;
+  color: #742a2a;
+}
+
+.schedule-error .schedule-title {
+  color: #742a2a;
+}
+
+/* Success State */
+.schedule-success {
+  background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+  border: 2px solid #38a169;
+}
+
+/* Custom Properties for Theme Customization */
+:root {
+  --schedule-primary-color: #667eea;
+  --schedule-secondary-color: #764ba2;
+  --schedule-background: #f8f9fa;
+  --schedule-text-color: #2d3748;
+  --schedule-border-color: #e1e8ed;
+  --schedule-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --schedule-border-radius: 12px;
+  --schedule-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Theme Variants */
+.schedule-theme-blue {
+  --schedule-primary-color: #3182ce;
+  --schedule-secondary-color: #2c5282;
+}
+
+.schedule-theme-green {
+  --schedule-primary-color: #38a169;
+  --schedule-secondary-color: #2f855a;
+}
+
+.schedule-theme-purple {
+  --schedule-primary-color: #805ad5;
+  --schedule-secondary-color: #6b46c1;
+}
+
+.schedule-theme-orange {
+  --schedule-primary-color: #dd6b20;
+  --schedule-secondary-color: #c05621;
+}
+
+/* Performance Optimizations */
+.professional-table {
+  contain: layout style paint;
+  will-change: scroll-position;
+}
+
+.subject-block {
+  contain: layout style paint;
+  will-change: transform;
+}
+
+.schedule-cell {
+  contain: layout style paint;
+}
+
+/* Utility Classes */
+.schedule-hidden {
+  display: none !important;
+}
+
+.schedule-visible {
+  display: block !important;
+}
+
+.schedule-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.schedule-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* Tooltip Styles */
+.schedule-tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.schedule-tooltip.show {
+  opacity: 1;
+}
+
+/* Sticky Header Enhancement */
+.header-row th {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.day-header,
+.day-cell {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Enhanced Scrollbar for Firefox */
+.schedule-grid {
+  scrollbar-width: thin;
+  scrollbar-color: #667eea #f1f3f4;
+}
+
+/* Selection Styles */
+.subject-block::selection,
+.subject-block *::selection {
+  background: rgba(102, 126, 234, 0.2);
+  color: inherit;
+}
+
+/* Print Page Breaks */
+@media print {
+  .professional-schedule-container {
+    page-break-inside: avoid;
+  }
+  
+  .schedule-header {
+    page-break-after: avoid;
+  }
+  
+  .header-row {
+    page-break-after: avoid;
+  }
+  
+  .day-cell {
+    page-break-after: avoid;
+  }
+  
+  .subject-block {
+    page-break-inside: avoid;
+    orphans: 2;
+    widows: 2;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .professional-schedule-container {
+  direction: rtl;
+}
+
+[dir="rtl"] .day-header,
+[dir="rtl"] .day-cell {
+  right: 0;
+  left: auto;
+}
+
+[dir="rtl"] .subject-block {
+  border-right: 4px solid transparent;
+  border-left: 1px solid #e2e8f0;
+}
+
+[dir="rtl"] .subject-block[style*="rgb(227, 242, 253)"] {
+  border-right: 4px solid #3182ce;
+  border-left: 1px solid #e2e8f0;
+}
+
+/* Container Queries Support */
+@container (max-width: 600px) {
+  .professional-table {
+    font-size: 0.6rem;
+  }
+  
+  .schedule-cell {
+    height: 60px;
+  }
+}
+
+@container (max-width: 400px) {
+  .professional-table {
+    font-size: 0.5rem;
+  }
+  
+  .schedule-cell {
+    height: 50px;
+  }
+}
+
+/* Final Responsive Enhancements */
+@media (orientation: landscape) and (max-height: 500px) {
+  .schedule-cell {
+    height: clamp(40px, 8vh, 60px);
+  }
+  
+  .subject-block {
+    padding: clamp(2px, 0.5vh, 4px);
+  }
+}
+
+@media (orientation: portrait) and (max-width: 480px) {
+  .professional-table {
+    min-width: clamp(400px, 90vw, 600px);
+  }
+}
+
+/* Enhanced Accessibility */
+@media (prefers-reduced-motion: no-preference) {
+  .subject-block {
+    transition: var(--schedule-transition);
+  }
+  
+  .schedule-cell {
+    transition: var(--schedule-transition);
+  }
+}
+
+/* Modern Browser Features */
+@supports (backdrop-filter: blur(10px)) {
+  .schedule-header {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+@supports (container-type: inline-size) {
+  .professional-schedule-container {
+    container-type: inline-size;
+  }
+}
+
+@supports (scroll-behavior: smooth) {
+  .schedule-grid {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Final Performance Optimizations */
+.professional-schedule-container * {
+  box-sizing: border-box;
+}
+
+.professional-table,
+.schedule-grid {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Enhanced Mobile Responsive Styles for Table Display */
+
+/* Ultra Mobile Optimizations - Critical for very small screens */
+@media (max-width: 480px) {
+  .professional-schedule-container {
+    margin: 0.5rem 0.25rem;
+    padding: 0.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .schedule-header {
+    padding: 1rem 0.75rem;
+    border-radius: 12px 12px 0 0;
+  }
+  
+  .schedule-title {
+    font-size: clamp(1.1rem, 4vw, 1.4rem);
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+  
+  .room-badge {
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+  }
+  
+  /* Compact table styling for mobile */
+  .professional-table {
+    min-width: 100%;
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    border-collapse: separate;
+    border-spacing: 1px;
+  }
+  
+  .header-row th {
+    padding: 0.6rem 0.3rem;
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    line-height: 1.1;
+  }
+  
+  .time-header {
+    width: auto;
+    min-width: 70px;
+    font-size: clamp(0.65rem, 1.8vw, 0.75rem);
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .day-header,
+  .day-cell {
+    width: auto;
+    min-width: 50px;
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .day-name-ar {
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    margin-bottom: 0.1rem;
+  }
+  
+  .day-name-en {
+    font-size: clamp(0.55rem, 1.5vw, 0.65rem);
+    opacity: 0.8;
+  }
+  
+  .schedule-cell {
+    height: auto;
+    min-height: 60px;
+    padding: 0.4rem 0.2rem;
+    vertical-align: top;
+  }
+  
+  .schedule-content {
+    gap: 0.2rem;
+  }
+  
+  .subject-block {
+    padding: 0.5rem;
+    margin-bottom: 0.3rem;
+    border-radius: 8px;
+    font-size: clamp(0.65rem, 1.8vw, 0.75rem);
+    line-height: 1.2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .subject-header {
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    line-height: 1.3;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    text-align: center;
+  }
+  
+  .instructor-info {
+    font-size: clamp(0.6rem, 1.6vw, 0.7rem);
+    line-height: 1.1;
+  }
+  
+  .instructor-name {
+    font-weight: 600;
+    margin-bottom: 0.1rem;
+  }
+  
+  .additional-info,
+  .class-info,
+  .department-info {
+    font-size: clamp(0.55rem, 1.4vw, 0.65rem);
+    margin-bottom: 0;
+    opacity: 0.9;
+  }
+}
+
+/* Enhanced Mobile Bootstrap Table Styles for Better Text Visibility */
+@media (max-width: 768px) {
+  .table {
+    font-size: clamp(0.7rem, 1.5vw, 0.85rem) !important;
+    min-width: auto !important;
+  }
+  
+  .table th,
+  .table td {
+    padding: clamp(8px, 1.5vw, 12px) clamp(6px, 1.2vw, 8px) !important;
+    min-width: 100px;
+    font-size: clamp(0.65rem, 1.4vw, 0.8rem) !important;
+    line-height: 1.3 !important;
+    vertical-align: middle !important;
+  }
+  
+  .table th {
+    font-size: clamp(0.7rem, 1.5vw, 0.85rem) !important;
+    white-space: normal !important;
+    font-weight: 700 !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+  
+  /* Subject card mobile optimizations */
+  .subject-card,
+  .subject-block {
+    margin: clamp(4px, 0.8vw, 6px) 0 !important;
+    padding: clamp(8px, 1.5vw, 12px) !important;
+    border-radius: clamp(6px, 1.2vw, 8px) !important;
+    font-size: clamp(0.65rem, 1.4vw, 0.8rem) !important;
+    line-height: 1.3 !important;
+    min-height: clamp(50px, 8vw, 70px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  
+  .subject-card .subject-header,
+  .subject-block .subject-header {
+    font-size: clamp(0.7rem, 1.5vw, 0.85rem) !important;
+    font-weight: 700 !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+    margin-bottom: clamp(4px, 0.8vw, 6px) !important;
+  }
+  
+  .subject-card .instructor-info,
+  .subject-block .instructor-info {
+    font-size: clamp(0.6rem, 1.3vw, 0.75rem) !important;
+    line-height: 1.2 !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+  }
+  
+  /* Time slot adjustments */
+  .time-slot,
+  .time-header {
+    min-width: clamp(80px, 12vw, 100px);
+    padding: clamp(6px, 1.2vw, 8px) clamp(4px, 0.8vw, 6px) !important;
+    font-size: clamp(0.6rem, 1.3vw, 0.75rem) !important;
+    line-height: 1.2 !important;
+  }
+  
+  /* Day header mobile styling */
+  .day-header,
+  .day-cell {
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    min-width: clamp(60px, 10vw, 80px);
+    padding: clamp(8px, 1.5vw, 12px) clamp(6px, 1.2vw, 8px) !important;
+    font-size: clamp(0.65rem, 1.4vw, 0.8rem) !important;
+    line-height: 1.2 !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+  }
+}
+  
+  .table th,
+  .table td {
+    padding: 8px 4px !important;
+    min-width: 100px;
+    font-size: clamp(10px, 2vw, 12px) !important;
+  }
+  
+  .table th {
+    font-size: 11px !important;
+    white-space: nowrap;
+    font-weight: 700 !important;
+  }
+  
+  /* Subject card mobile optimizations */
+  .subject-card,
+  .subject-block {
+    margin: 4px 0 !important;
+    padding: 8px !important;
+    border-radius: 8px !important;
+    font-size: clamp(10px, 2vw, 12px) !important;
+  }
+  
+  /* Time slot adjustments */
+  .time-slot,
+  .time-header {
+    min-width: 80px;
+    padding: 6px 3px !important;
+    font-size: clamp(9px, 1.8vw, 11px) !important;
+  }
+  
+  /* Day header mobile styling */
+  .day-header,
+  .day-cell {
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    min-width: 60px;
+    padding: 8px 4px !important;
+    font-size: clamp(10px, 2vw, 12px) !important;
+  }
+  
+  /* Modal improvements for mobile */
+  .modal-dialog {
+    margin: 10px !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+  
+  .table-responsive {
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  }
+
+
+@media (max-width: 576px) {
+  .table {
+    font-size: clamp(0.6rem, 1.3vw, 0.75rem) !important;
+    border-collapse: separate !important;
+    border-spacing: 1px !important;
+  }
+  
+  .table th,
+  .table td {
+    padding: clamp(6px, 1.2vw, 8px) clamp(3px, 0.6vw, 5px) !important;
+    min-width: clamp(70px, 10vw, 90px);
+    font-size: clamp(0.55rem, 1.2vw, 0.7rem) !important;
+    line-height: 1.2 !important;
+    vertical-align: middle !important;
+  }
+  
+  .subject-card,
+  .subject-block {
+    margin: clamp(3px, 0.6vw, 5px) 0 !important;
+    padding: clamp(6px, 1.2vw, 8px) !important;
+    font-size: clamp(0.55rem, 1.2vw, 0.7rem) !important;
+    border-radius: clamp(5px, 1vw, 7px) !important;
+    line-height: 1.2 !important;
+    min-height: clamp(45px, 7vw, 60px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  
+  .subject-card .subject-header,
+  .subject-block .subject-header {
+    font-size: clamp(0.6rem, 1.3vw, 0.75rem) !important;
+    font-weight: 700 !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    text-align: center !important;
+    line-height: 1.1 !important;
+    margin-bottom: clamp(3px, 0.6vw, 5px) !important;
+  }
+  
+  .subject-card .instructor-info,
+  .subject-block .instructor-info {
+    font-size: clamp(0.5rem, 1.1vw, 0.65rem) !important;
+    line-height: 1.1 !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+  }
+  
+  /* Ultra-small screen adjustments */
+  .time-slot,
+  .time-header {
+    min-width: clamp(60px, 9vw, 80px);
+    font-size: clamp(0.5rem, 1.1vw, 0.65rem) !important;
+    padding: clamp(4px, 0.8vw, 6px) clamp(2px, 0.4vw, 4px) !important;
+    line-height: 1.1 !important;
+  }
+  
+  .day-header,
+  .day-cell {
+    min-width: clamp(50px, 8vw, 70px);
+    font-size: clamp(0.55rem, 1.2vw, 0.7rem) !important;
+    padding: clamp(6px, 1.2vw, 8px) clamp(3px, 0.6vw, 5px) !important;
+    line-height: 1.1 !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+  }
+}
+
+/* Horizontal scroll improvements for Bootstrap tables */
+.table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f3f4;
+  border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #007BFF, #0056B3);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #0056B3, #004085);
+}
+
+/* Enhanced Arabic text wrapping and mobile visibility */
+.arabic-text {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  line-height: 1.4;
+  direction: rtl;
+  text-align: right;
+}
+
+/* Mobile-specific text enhancements */
+@media (max-width: 768px) {
+  .arabic-text {
+    line-height: 1.3;
+    word-spacing: 0.1em;
+  }
+  
+  /* Ensure all text elements have proper wrapping on mobile */
+  .subject-header,
+  .instructor-name,
+  .additional-info,
+  .class-info,
+  .department-info {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    hyphens: auto !important;
+  }
+  
+  /* Special handling for Arabic content in schedule cells */
+  .schedule-cell [dir="rtl"],
+  .schedule-cell .arabic-text,
+  .subject-block [dir="rtl"],
+  .subject-block .arabic-text {
+    text-align: center !important;
+    direction: rtl;
+    unicode-bidi: embed;
+  }
+}
+
+/* Enhanced mobile text visibility utilities */
+@media (max-width: 576px) {
+  .mobile-text-optimize {
+    font-size: clamp(0.6rem, 1.3vw, 0.75rem) !important;
+    line-height: 1.2 !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    text-align: center !important;
+  }
+  
+  .mobile-header-text {
+    font-size: clamp(0.65rem, 1.4vw, 0.8rem) !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+  }
+}
+
+/* Enhanced touch targets for mobile */
+@media (pointer: coarse) {
+  .btn {
+    min-height: 44px;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  .table td {
+    min-height: 44px;
+  }
+  
+  .subject-block {
+    min-height: 44px;
+    cursor: pointer;
+  }
+}
+
+/* Improved button styles for mobile */
+@media (max-width: 768px) {
+  .btn {
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px) !important;
+    font-size: clamp(12px, 2.5vw, 14px) !important;
+    border-radius: clamp(6px, 1.5vw, 8px) !important;
+  }
+  
+  .btn-group .btn {
+    margin: 2px !important;
+  }
+}
+
+/* Enhanced modal responsiveness */
+@media (max-width: 768px) {
+  .modal-content {
+    border-radius: 12px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .modal-title {
+    font-size: clamp(14px, 3vw, 18px) !important;
+    line-height: 1.3;
+  }
+}
+
+/* Table cell content optimization */
+@media (max-width: 576px) {
+  .schedule-cell {
+    vertical-align: top !important;
+    height: auto !important;
+    min-height: clamp(60px, 12vw, 80px) !important;
+  }
+  
+  .subject-header {
+    font-weight: 700 !important;
+    margin-bottom: 2px !important;
+    text-align: center !important;
+  }
+  
+  .instructor-info {
+    line-height: 1.2 !important;
+    text-align: center !important;
+  }
+}
+
+/* Responsive typography improvements */
+@media (max-width: 480px) {
+  .modal-title {
+    font-size: 16px !important;
+    line-height: 1.3;
+  }
+  
+  .table th,
+  .table td {
+    padding: 8px 4px !important;
+    font-size: 11px !important;
+  }
+  
+  .table th {
+    font-size: 10px !important;
+    font-weight: 700 !important;
+  }
+}
+
+/* Landscape orientation optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  .schedule-cell {
+    height: clamp(50px, 8vw, 70px) !important;
+  }
+  
+  .subject-block {
+    padding: clamp(3px, 0.8vw, 6px) !important;
+    font-size: clamp(8px, 1.5vw, 10px) !important;
+  }
+  
+  .modal-dialog {
+    max-height: 85vh;
+  }
+}
+
+/* Lecture subject card responsive styles */
+.subject-card {
+  display: block;
+  width: 100%;
+  background: #ffffff;
+  padding: clamp(10px, 2vw, 14px);
+  border-radius: clamp(8px, 1.2vw, 12px);
+  box-shadow: 0 10px 18px rgba(2,6,23,0.06);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  word-break: break-word;
+  overflow: hidden;
+}
+
+.subject-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 28px rgba(2,6,23,0.08);
+}
+
+.subject-card .subject-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.subject-card .subject-header .subject-title {
+  font-weight: 900;
+  font-size: clamp(14px, 2.4vw, 16px);
+  line-height: 1.25;
+  max-height: calc(1.25em * 3); /* show up to 3 lines */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+}
+
+.subject-card .lecture-type-desc {
+  font-size: clamp(11px, 1.6vw, 13px);
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* Accent left border per lecture type */
+.subject-card.theoretical {
+  border-left: 6px solid #0dcaf0;
+}
+
+.subject-card.practical {
+  border-left: 6px solid #28a745;
+}
+
+/* Lecture type badge */
+.lecture-type-badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.lecture-type-badge.theoretical {
+  background: linear-gradient(90deg,#ebf8ff,#e6f7ff);
+  color: #065f9e;
+  border: 1px solid #bfefff;
+}
+
+.lecture-type-badge.practical {
+  background: linear-gradient(90deg,#ecfdf5,#dcfce7);
+  color: #065f46;
+  border: 1px solid #bbf7d0;
+}
+
+/* Ensure badge aligns well on RTL and wraps nicely on small screens */
+.subject-card .lecture-type-badge {
+  margin-top: 6px;
+  margin-left: 6px;
+  direction: rtl;
+}
+
+@media (max-width: 768px) {
+  .lecture-type-badge {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    font-size: 0.95rem;
+    border-radius: 8px;
+  }
+
+  .subject-card .lecture-type-badge {
+    margin-left: 0;
+    margin-top: 8px;
+  }
+}

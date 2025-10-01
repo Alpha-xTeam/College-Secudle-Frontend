@@ -1,0 +1,123 @@
+/* Login page styles - modern and minimal, aligned with site theme */
+:root{
+  --primary: #2a4dd7;
+  --accent: #667eea;
+  /* Use a subtle neutral background instead of a blue gradient */
+  --bg: #f7f9fc;
+  --card-radius: 28px;
+  --muted: rgba(17,20,37,0.6);
+}
+
+.login-container{
+  background: var(--bg) !important; /* override global blue gradient */
+  font-family: 'Cairo', sans-serif;
+  min-height: 100vh;
+  padding: 4rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card{
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 8px 32px rgba(42, 77, 215, 0.08);
+  border: none;
+}
+
+.login-header{
+  background: linear-gradient(135deg, var(--primary) 0%, #4facfe 100%);
+  color: #fff;
+  padding: 2.25rem 1.5rem 1.6rem;
+  text-align: center;
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
+}
+
+.login-logo{
+  width: 72px; height: 72px; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; border: 2px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06); box-shadow: 0 4px 18px rgba(42,77,215,0.06); margin-bottom: 8px;
+}
+
+.login-body{ padding: 2.2rem; }
+
+.form-control-custom{
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 2px solid rgba(219,234,254,1);
+  font-size: 1.02rem;
+  background: #fbfdff;
+  box-shadow: none;
+  transition: border-color .18s ease, box-shadow .18s ease, transform .12s ease;
+}
+.form-control-custom:focus{
+  box-shadow: 0 6px 18px rgba(42,77,215,0.08);
+  border-color: var(--primary);
+  outline: none;
+}
+
+.input-label{ font-weight:700; color: #111; }
+
+.btn-primary-custom{
+  padding: 12px 0;
+  border-radius: 14px;
+  background: linear-gradient(90deg, var(--primary) 0%, #4facfe 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 10px 30px rgba(42,77,215,0.12);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.btn-primary-custom:hover{ transform: translateY(-3px); box-shadow: 0 16px 40px rgba(42,77,215,0.18); }
+
+.login-footer-note{ text-align:center; color: var(--muted); margin-top: .8rem; }
+
+/* InputGroup icon styles */
+.input-icon{
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+}
+
+.input-group .form-control{
+  border-radius: 12px;
+}
+
+/* when using InputGroup, remove default border on InputGroup.Text */
+.input-group .input-icon{
+  border-right: none;
+}
+
+/* ensure the InputGroup has matching border with input */
+.input-group .form-control.form-control-custom{
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+/* For RTL alignment, flip icon side visually when needed */
+[dir="rtl"] .input-group .input-icon{ order: 0; }
+
+/* small tweak for the button icon spacing */
+.btn-primary-custom i{ margin-inline-end: .5rem; }
+
+/* Responsive */
+@media (max-width: 768px){
+  .login-container{ padding: 3rem 1rem; }
+  .login-card{ margin: 0 1rem; }
+}
+
+@media (max-width: 420px){
+  .login-header{ padding: 1.6rem 1rem 1rem; }
+  .login-body{ padding: 1.2rem; }
+  .login-logo{ width: 60px; height: 60px; }
+  .form-control-custom{ padding: 12px 14px; }
+}
+
+/* Optional helper to set body background when rendering Login component */
+.login-page-body{
+  background: var(--bg) !important;
+}

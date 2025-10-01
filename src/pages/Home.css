@@ -1,0 +1,124 @@
+:root{
+  --primary: #2a4dd7;
+  --accent: #667eea;
+  --bg: #ffffff;
+  --text: #111425;
+  --muted: rgba(17,20,37,0.65);
+  --card-radius: 20px;
+}
+
+/* Navbar stretches full width and sticks to top */
+.site-navbar{
+  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+  color: #fff;
+  padding: 0.55rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 2000;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(42,77,215,0.08);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  font-family: 'Cairo', sans-serif; /* ensure navbar uses Cairo like Home */
+}
+.brand-wrapper{ gap: 0.75rem; }
+.brand-logo{ width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; background: rgba(255,255,255,0.12); font-size:1.15rem; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
+.brand-text{ color: #fff; font-weight:700; font-size:1.12rem; }
+.nav-link-custom{ color: rgba(255,255,255,0.9) !important; margin: 0 0.5rem; transition: color .18s ease, opacity .18s ease; }
+.nav-link-custom:hover{ color: white !important; opacity: 0.95; text-decoration: underline; }
+
+/* Login button styling */
+.btn-login{ background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18); color: #fff; border-radius: 999px; padding: 8px 18px; box-shadow: 0 6px 20px rgba(102,126,234,0.12); }
+.btn-login:hover{ background: rgba(255,255,255,0.18); transform: translateY(-2px); }
+
+/* Navbar collapse background on small screens for better readability */
+@media (max-width: 991px){
+  .site-navbar .navbar-collapse{ background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); padding: 0.75rem; border-radius: 8px; }
+  .nav-link-custom{ display:block; padding: 0.6rem 0; }
+}
+
+/* Ensure contrast on brand when using dark variant */
+.site-navbar .navbar-toggler{ border-color: rgba(255,255,255,0.15); }
+.site-navbar .navbar-toggler-icon{ filter: invert(1) brightness(2) opacity(.9); }
+
+/* Modern navbar styles */
+.site-navbar{
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  color: #fff;
+  padding: 0.6rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 2000;
+  width: 100%;
+  box-shadow: 0 6px 18px rgba(42,77,215,0.08);
+}
+.site-navbar .navbar-brand{ color: #fff; font-weight: 700; }
+.site-navbar .btn-login{ background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.12); color: #fff; }
+
+.home-page{ background: var(--bg); color: var(--text); font-family: 'Cairo', sans-serif; }
+
+.team-card{
+  background: #fff; border-radius: var(--card-radius); padding: 22px; border: 1px solid rgba(42,77,215,0.16); box-shadow: 0 10px 40px rgba(42,77,215,0.05); max-width:900px; margin: 0 auto;
+}
+.team-logo{ width: 80px; height: 80px; border-radius: 50%; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.team-title{ color: var(--primary); font-size: 1.6rem; margin-bottom: 6px; font-weight:700; }
+.team-sub{ color: var(--muted); font-size: 0.98rem; font-style: italic; }
+
+.access-alert{ background: #fff; color: var(--text); border-radius: 15px; font-weight:700; border: 1px solid rgba(42,77,215,0.14); }
+
+.hero-content{ padding: 1rem; }
+.display-3{ font-weight:700; color:var(--primary); }
+.cta-button{ background: var(--primary); color: #fff; border-radius: 50px; padding: 12px 36px; font-size: 1.05rem; border: none; box-shadow: 0 12px 30px rgba(42,77,215,0.12); transition: transform .25s ease, box-shadow .25s ease; }
+.cta-button:hover{ transform: translateY(-4px); box-shadow: 0 18px 46px rgba(42,77,215,0.18); }
+
+/* Feature cards unified style */
+.feature-card{ background: #fff; border-radius: var(--card-radius); transition: transform .25s ease, box-shadow .25s ease; cursor: pointer; border: none; box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+.feature-card:hover{ transform: translateY(-8px); box-shadow: 0 26px 60px rgba(0,0,0,0.12); }
+.feature-card .card-body{ padding: 1.6rem; }
+
+/* CTA Card */
+.cta-card{ border-radius: 22px; padding: 1.5rem; }
+
+/* Section title */
+.section-title{ color: var(--primary); }
+
+/* Feature icon */
+.feature-icon{ font-size: clamp(2.2rem, 4vw, 3rem); margin-bottom: 1rem; color: var(--primary); display:flex; align-items:center; justify-content:center; }
+.feature-icon i{ display:block; }
+
+/* CTA button icon spacing */
+.cta-button i{ margin-inline-end: .6rem; }
+
+/* Brand & hero icons */
+.brand-icon{ font-size:1.05rem; color: #fff; }
+.hero-icon{ font-size: clamp(2.6rem, 5vw, 4.5rem); color: var(--primary); margin-bottom: 1.25rem; }
+
+/* Ensure lead text contrast */
+.lead{ color: var(--muted); }
+
+/* Responsive tweaks */
+@media (max-width: 991px){
+  .team-card{ padding: 18px; }
+  .team-logo{ width: 66px; height:66px; }
+  .display-3{ font-size: 2rem !important; }
+  .hero-content{ text-align:center; }
+}
+
+@media (max-width: 576px){
+  .team-title{ font-size: 1.2rem; }
+  .cta-button{ width: 100%; padding: 14px 18px; }
+  .feature-card{ border-radius: 14px; }
+  .feature-icon{ font-size: 2.6rem; }
+  .team-card{ padding: 14px; }
+  .display-5{ font-size: 1.7rem; }
+}
+
+/* Ensure login button aligns left visually while brand stays right in RTL layout */
+.nav-login-wrapper{ margin-left: 0; }
+
+@media (max-width: 576px){
+  .nav-login-wrapper{ margin-left: 0; }
+  .site-navbar{ padding: 0.6rem 0.6rem; }
+  .brand-text{ font-size: 1rem; }
+  .btn-login{ padding: 8px 12px; font-size: 0.95rem; }
+}

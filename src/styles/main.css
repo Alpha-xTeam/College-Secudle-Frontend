@@ -1,0 +1,1001 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700&display=swap');
+
+/* الأنماط الرئيسية للنظام */
+
+
+body {
+  font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  direction: rtl;
+  text-align: right;
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  color: #1A2B4C;
+}
+
+.App {
+  min-height: 100vh;
+}
+
+/* إضافة مسافة للمحتوى عند وجود الـ navbar المثبت */
+.main-content {
+  padding-top: 76px; /* ارتفاع الـ navbar + مسافة إضافية */
+  min-height: calc(100vh - 76px);
+}
+
+/* تحسين الـ Navbar */
+
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+  border-bottom: 1px solid #ADD8E6;
+  background-color: #007BFF !important;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  font-size: 1.25rem;
+  transition: transform 0.2s ease;
+}
+
+.navbar-brand:hover {
+  transform: translateY(-1px);
+}
+
+
+.navbar-nav .nav-link {
+  font-weight: 500;
+  margin: 0 0.5rem;
+  padding: 0.5rem 1rem !important;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  color: #FFFFFF !important;
+}
+
+
+.navbar-nav .nav-link:hover {
+  color: #FFFFFF !important;
+  background-color: #0056B3;
+  transform: translateY(-1px);
+}
+
+
+.navbar-nav .nav-link.active {
+  background-color: #0056B3;
+  color: #FFFFFF !important;
+}
+
+/* تحسين الدروب داون */
+.user-dropdown .dropdown-toggle::after {
+  margin-left: 0.5rem;
+}
+
+.dropdown-menu {
+  border: none;
+  box-shadow: 0 4px 6px rgba(0, 123, 255, 0.1);
+  border-radius: 8px;
+}
+
+.dropdown-item {
+  padding: 0.7rem 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #F8F9FA;
+  transform: translateX(5px);
+}
+
+/* تحسين الأيقونات */
+.fas, .fa {
+  color: inherit;
+}
+
+/* الكروت */
+.card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.15);
+}
+
+
+.card-header {
+  background-color: #007BFF;
+  color: #FFFFFF;
+  border-bottom: 1px solid #ADD8E6;
+  font-weight: 600;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+/* الأزرار */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 123, 255, 0.15);
+}
+
+.btn-lg {
+  padding: 12px 30px;
+  font-size: 1.1rem;
+}
+
+/* تحسين الجداول */
+.table {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.05);
+}
+
+.table thead th {
+  background-color: #007BFF;
+  color: #FFFFFF;
+  border: none;
+  font-weight: 600;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table tbody td {
+  vertical-align: middle;
+  text-align: center;
+  border-color: #F8F9FA;
+  color: #1A2B4C;
+}
+
+.table tbody tr:hover {
+  background-color: #EBF5FF;
+}
+
+/* تحسين الجداول */
+.table {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.table thead th {
+  background-color: #2a4dd7;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table tbody td {
+  vertical-align: middle;
+  text-align: center;
+  border-color: #f1f3f4;
+  color: #111;
+}
+
+.table tbody tr:hover {
+  background-color: #e3e8ff;
+}
+
+/* الصفحة الرئيسية */
+.login-container {
+  background: linear-gradient(135deg, #007BFF 0%, #0056B3 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-container .card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 123, 255, 0.2);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  background-color: rgba(255,255,255,0.95);
+}
+
+.login-container .card-header {
+  border-radius: 15px 15px 0 0 !important;
+  background: linear-gradient(45deg, #007BFF, #0056B3);
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  border: none;
+}
+
+/* تحسين كروت الحسابات */
+.account-card {
+  transition: all 0.3s ease;
+  border-width: 2px !important;
+}
+
+.account-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
+}
+
+.account-card .card-body {
+  padding: 1.5rem;
+}
+
+.account-icon {
+  transition: transform 0.2s ease;
+}
+
+.account-card:hover .account-icon {
+  transform: scale(1.1);
+}
+
+/* تحسين الشارات */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* تحسين الفورم */
+.form-control-lg {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 2px solid #ADD8E6;
+  transition: all 0.2s ease;
+}
+
+.form-control-lg:focus {
+  border-color: #007BFF;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* تحسين زر الدخول */
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #007BFF 0%, #0056B3 100%);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #0056B3 0%, #004085 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+/* تحسين الـ responsive للحسابات */
+@media (max-width: 768px) {
+  .login-container .card {
+    margin: 1rem;
+  }
+  
+  .account-card .card-body {
+    padding: 1rem;
+  }
+  
+  .account-icon {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* تحسينات إضافية للداشبورد */
+.dashboard-header {
+  background: linear-gradient(135deg, #007BFF 0%, #0056B3 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.dashboard-header h2 {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.dashboard-header p {
+  margin-bottom: 0;
+  opacity: 0.9;
+}
+
+/* إحصائيات الداشبورد */
+.stat-card {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 100%);
+  border-left: 4px solid #007BFF;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  border-left-color: #0056B3;
+  transform: translateY(-3px);
+}
+
+.stat-card .card-body {
+  padding: 1.5rem;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #007BFF;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  color: #1A2B4C;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: 0.5px;
+}
+
+/* تحسين الفورم */
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 2px solid #ADD8E6;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #007BFF;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-label {
+  font-weight: 600;
+  color: #1A2B4C;
+  margin-bottom: 0.5rem;
+}
+
+/* تحسين الـ Modal */
+.modal-content {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 123, 255, 0.2);
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #007BFF 0%, #0056B3 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+  border-bottom: none;
+}
+
+.modal-header .btn-close {
+  color: white;
+  opacity: 0.8;
+}
+
+.modal-header .btn-close:hover {
+  opacity: 1;
+}
+
+/* تحسين الـ Alert */
+.alert {
+  border: none;
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.alert-success {
+  background-color: #EBF5FF;
+  border-left-color: #007BFF;
+  color: #1A2B4C;
+}
+
+.alert-danger {
+  background-color: #F8F9FA;
+  border-left-color: #007BFF;
+  color: #1A2B4C;
+}
+
+.alert-warning {
+  background-color: #F8F9FA;
+  border-left-color: #007BFF;
+  color: #1A2B4C;
+}
+
+/* تحسين الـ Badge */
+.badge {
+  font-size: 0.8rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* إضافة أنيميشن للتحميل */
+.loading-spinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  vertical-align: text-bottom;
+  border: 0.25em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spinner-border 0.75s linear infinite;
+}
+
+@keyframes spinner-border {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* تحسين الـ QR Code */
+.qr-code-container {
+  text-align: center;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1);
+}
+
+.qr-code-container img {
+  border: 2px solid #ADD8E6;
+  border-radius: 8px;
+  padding: 1rem;
+  background: white;
+}
+
+/* تحسين الـ Badge */
+.badge {
+  font-size: 0.8rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* إضافة أنيميشن للتحميل */
+.loading-spinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  vertical-align: text-bottom;
+  border: 0.25em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spinner-border 0.75s linear infinite;
+}
+
+@keyframes spinner-border {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* تحسين الـ QR Code */
+.qr-code-container {
+  text-align: center;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.qr-code-container img {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  background: white;
+}
+
+/* تحسين responsive */
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 66px;
+  }
+  
+  .dashboard-header {
+    padding: 1.5rem;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+  
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+}
+
+/* تحسين الجداول للهواتف */
+@media (max-width: 576px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  .btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+.schedule-table-container .table th {
+  background-color: #F8F9FA;
+  border-top: 2px solid #ADD8E6;
+  font-weight: 600;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.schedule-table-container .table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.schedule-table-container .table td:nth-child(2) {
+  font-weight: 600;
+  color: #1A2B4C;
+}
+
+/* الشارات والألوان */
+.badge {
+  font-size: 0.8rem;
+}
+
+/* الأزرار */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.btn-lg {
+  padding: 12px 30px;
+  font-size: 1.1rem;
+}
+
+/* الكروت */
+.card {
+  border: none;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 123, 255, 0.075);
+  border-radius: 10px;
+}
+
+.card-header {
+  background-color: #F8F9FA;
+  border-bottom: 1px solid #ADD8E6;
+  font-weight: 600;
+}
+
+/* الجداول */
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table thead th {
+  border-bottom: 2px solid #ADD8E6;
+  font-weight: 600;
+}
+
+/* الفورم */
+.form-control,
+.form-select {
+  border-radius: 8px;
+  border: 1px solid #ADD8E6;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #007BFF;
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+}
+
+/* المودال */
+.modal-content {
+  border-radius: 15px;
+  border: none;
+}
+
+.modal-header {
+  border-bottom: 1px solid #ADD8E6;
+  border-radius: 15px 15px 0 0;
+}
+
+.modal-footer {
+  border-top: 1px solid #ADD8E6;
+  border-radius: 0 0 15px 15px;
+}
+
+/* الإشعارات */
+.alert {
+  border-radius: 10px;
+  border: none;
+}
+
+/* QR Scanner */
+#qr-scanner-container {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* الاستجابة للأجهزة المحمولة */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .schedule-table-container .table {
+    font-size: 0.8rem;
+  }
+  
+  .btn-lg {
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+/* تحسينات إضافية */
+.text-primary {
+  color: #007BFF !important;
+}
+
+.bg-primary {
+  background-color: #007BFF !important;
+}
+
+.border-bottom {
+  border-bottom: 1px solid #ADD8E6 !important;
+}
+
+.min-vh-100 {
+  min-height: 100vh !important;
+}
+
+/* إخفاء النصوص الإنجليزية في QR Scanner */
+#qr-scanner-container button,
+#qr-scanner-container select,
+#qr-scanner-container label {
+  font-size: 0.9rem;
+}
+
+/* تحسين مظهر الإحصائيات */
+.stats-card {
+  transition: transform 0.2s;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+}
+
+/* تحسين مظهر الجداول على الشاشات الصغيرة */
+@media (max-width: 576px) {
+  .table-responsive {
+    border-radius: 8px;
+  }
+  
+  .schedule-table-container .table td,
+  .schedule-table-container .table th {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+  }
+}
+
+.schedule-table-container .table th {
+  background-color: #f8f9fa;
+  border-top: 2px solid #dee2e6;
+  font-weight: 600;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.schedule-table-container .table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.schedule-table-container .table td:nth-child(2) {
+  font-weight: 600;
+  color: #495057;
+}
+
+/* الشارات والألوان */
+.badge {
+  font-size: 0.8rem;
+}
+
+/* الأزرار */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.btn-lg {
+  padding: 12px 30px;
+  font-size: 1.1rem;
+}
+
+/* الكروت */
+.card {
+  border: none;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border-radius: 10px;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  font-weight: 600;
+}
+
+/* الجداول */
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table thead th {
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+}
+
+/* الفورم */
+.form-control,
+.form-select {
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* المودال */
+.modal-content {
+  border-radius: 15px;
+  border: none;
+}
+
+.modal-header {
+  border-bottom: 1px solid #dee2e6;
+  border-radius: 15px 15px 0 0;
+}
+
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+  border-radius: 0 0 15px 15px;
+}
+
+/* الإشعارات */
+.alert {
+  border-radius: 10px;
+  border: none;
+}
+
+/* QR Scanner */
+#qr-scanner-container {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* الاستجابة للأجهزة المحمولة */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .schedule-table-container .table {
+    font-size: 0.8rem;
+  }
+  
+  .btn-lg {
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+/* تحسينات إضافية */
+.text-primary {
+  color: #0d6efd !important;
+}
+
+.bg-primary {
+  background-color: #0d6efd !important;
+}
+
+.border-bottom {
+  border-bottom: 1px solid #dee2e6 !important;
+}
+
+.min-vh-100 {
+  min-height: 100vh !important;
+}
+
+/* إخفاء النصوص الإنجليزية في QR Scanner */
+#qr-scanner-container button,
+#qr-scanner-container select,
+#qr-scanner-container label {
+  font-size: 0.9rem;
+}
+
+/* تحسين مظهر الإحصائيات */
+.stats-card {
+  transition: transform 0.2s;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+}
+
+/* تحسين مظهر الجداول على الشاشات الصغيرة - Enhanced Mobile Table Styles */
+@media (max-width: 576px) {
+  .table-responsive {
+    border-radius: 8px;
+    margin: 0 -0.5rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .schedule-table-container .table td,
+  .schedule-table-container .table th {
+    padding: 0.4rem 0.2rem;
+    font-size: clamp(0.65rem, 2.5vw, 0.75rem);
+    line-height: 1.2;
+    vertical-align: top;
+  }
+  
+  .schedule-table-container .table th {
+    font-weight: 700;
+    white-space: nowrap;
+    background-color: #f8f9fa;
+  }
+  
+  /* Enhanced subject cards for mobile */
+  .subject-card,
+  .subject-block {
+    margin: 0.25rem 0;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: clamp(0.7rem, 2.2vw, 0.8rem);
+    line-height: 1.3;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Time headers mobile optimization */
+  .time-header {
+    min-width: 60px;
+    font-size: clamp(0.6rem, 2vw, 0.7rem);
+    padding: 0.3rem 0.1rem;
+    writing-mode: horizontal-tb;
+  }
+  
+  /* Day headers mobile optimization */
+  .day-header {
+    min-width: 45px;
+    font-size: clamp(0.65rem, 2.2vw, 0.75rem);
+    padding: 0.4rem 0.15rem;
+  }
+  
+  /* Schedule cells mobile optimization */
+  .schedule-cell {
+    min-height: 50px;
+    padding: 0.3rem 0.15rem;
+    vertical-align: top;
+  }
+  
+  /* Instructor and subject info mobile styling */
+  .instructor-info {
+    font-size: clamp(0.6rem, 1.8vw, 0.7rem);
+    margin-bottom: 0.1rem;
+  }
+  
+  .subject-name {
+    font-size: clamp(0.7rem, 2.2vw, 0.8rem);
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+  }
+  
+  /* Modal adjustments for mobile */
+  .modal-content {
+    margin: 0.5rem;
+    border-radius: 12px;
+  }
+  
+  .modal-header {
+    padding: 1rem;
+    border-radius: 12px 12px 0 0;
+  }
+  
+  .modal-body {
+    padding: 1rem;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  .modal-title {
+    font-size: clamp(1rem, 3.5vw, 1.2rem);
+    line-height: 1.2;
+  }
+}
+
+/* Ultra-small screens optimization */
+@media (max-width: 360px) {
+  .table-responsive {
+    margin: 0 -0.75rem;
+  }
+  
+  .schedule-table-container .table td,
+  .schedule-table-container .table th {
+    padding: 0.25rem 0.1rem;
+    font-size: clamp(0.55rem, 3vw, 0.65rem);
+  }
+  
+  .subject-card,
+  .subject-block {
+    padding: 0.3rem;
+    margin: 0.15rem 0;
+    font-size: clamp(0.6rem, 2.8vw, 0.7rem);
+  }
+  
+  .time-header {
+    min-width: 45px;
+    font-size: clamp(0.5rem, 2.5vw, 0.6rem);
+  }
+  
+  .day-header {
+    min-width: 35px;
+    font-size: clamp(0.55rem, 2.8vw, 0.65rem);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+  
+  .schedule-cell {
+    min-height: 40px;
+    padding: 0.2rem 0.1rem;
+  }
+  
+  .subject-name {
+    font-size: clamp(0.6rem, 2.8vw, 0.7rem);
+  }
+  
+  .instructor-info {
+    font-size: clamp(0.5rem, 2.5vw, 0.6rem);
+  }
+}
+
+/* Landscape orientation on small devices */
+@media (max-width: 768px) and (orientation: landscape) {
+  .schedule-table-container .table td,
+  .schedule-table-container .table th {
+    padding: 0.3rem 0.15rem;
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+  }
+  
+  .schedule-cell {
+    min-height: 35px;
+  }
+  
+  .subject-card,
+  .subject-block {
+    padding: 0.4rem;
+    font-size: clamp(0.65rem, 1.8vw, 0.75rem);
+  }
+  
+  .modal-dialog {
+    max-height: 85vh;
+  }
+}

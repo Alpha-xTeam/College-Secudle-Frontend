@@ -1,0 +1,72 @@
+/* Room page styles - modern, simplified and consistent with Home theme */
+:root{
+  --primary: #2a4dd7;
+  --accent: #667eea;
+  --muted-dark: #374151;
+  --bg: #ffffff;
+  --text: #111425;
+  --card-radius: 16px;
+}
+
+.room-page{
+  background: var(--bg);
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Cairo', sans-serif;
+  color: var(--text);
+  padding-bottom: 4rem;
+}
+
+.room-header{
+  background: var(--primary);
+  color: #fff;
+  padding: 1.25rem 1rem;
+  border-radius: 10px;
+  text-align: center;
+}
+/* Make room title and department text dark when background is light — prefer dark text for readability */
+.room-header .dept-name{ color: rgba(0,0,0,0.55); opacity: 0.9; font-size: 0.9rem; margin-bottom: 6px; }
+.room-header h2{ color: var(--text); margin: 0; font-weight: 800; font-size: 1.9rem; line-height: 1.1; }
+.room-header .room-badge{ margin-top: 8px; }
+
+/* Ensure badge uses dark text for readability */
+.room-header .room-badge .badge {
+  background: rgba(255,255,255,0.95);
+  color: var(--text);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Study-type buttons */
+.study-section-card{ background: #fff; color: var(--text); border-radius: 10px; }
+.study-btn{ border-radius: 10px; font-weight: 700; color:#fff; padding: .9rem 1rem; min-height:66px; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow: 0 8px 20px rgba(42,77,215,0.06); transition: transform .18s ease, box-shadow .18s ease; }
+.study-btn i{ font-size: 1.4rem; margin-bottom: .25rem; }
+.study-btn:focus, .study-btn:hover{ transform: translateY(-4px); box-shadow: 0 14px 40px rgba(42,77,215,0.10); }
+.study-btn--primary{ background: var(--primary); }
+.study-btn--muted{ background: var(--muted-dark); }
+
+/* Announcement and utilities */
+.announcements-section{ background: linear-gradient(135deg, rgba(102,126,234,0.02), #fff); border-radius: 16px; padding: 20px; box-shadow: 0 8px 32px rgba(102,126,234,0.06); border: 1px solid rgba(102,126,234,0.08); }
+.ann-icon-circle{ width:50px; height:50px; border-radius:12px; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, var(--accent), #764ba2); color:white; box-shadow:0 8px 20px rgba(102,126,234,0.18); }
+.ann-title{ font-weight:800; font-size:1.2rem; color: #2c3e50; }
+.ann-count{ display:inline-block; background: linear-gradient(135deg, var(--accent), #764ba2); color:white; padding:4px 12px; border-radius:20px; font-weight:600; font-size:.85rem; }
+.ann-btn{ border-radius:12px; border-width:2px; font-weight:600; padding:.45rem .9rem; background:rgba(255,255,255,0.9); }
+.ann-btn:hover{ transform: translateY(-3px); box-shadow: 0 12px 30px rgba(102,126,234,0.12); }
+
+/* Announcement cards */
+.announcement-card{ background: rgba(255,255,255,0.95); border-radius:12px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); transition: transform .2s ease, box-shadow .2s ease; }
+.announcement-card:hover{ transform: translateY(-6px); box-shadow: 0 18px 50px rgba(0,0,0,0.12); }
+.announcement-left-border{ position:absolute; left:0; top:0; bottom:0; width:6px; border-radius: 0 0 0 12px; }
+
+.no-announcements{ text-align:center; padding:36px; border-radius:12px; background: rgba(248,249,250,0.9); border:2px dashed #dee2e6; }
+.no-announcements .icon{ font-size: 2.2rem; color: #6c757d; margin-bottom: 12px; }
+
+/* Responsive */
+@media (max-width: 768px){
+  .room-header h2{ font-size: 1.4rem; }
+  .study-btn{ min-height: 60px; }
+}
+
+@media (max-width: 420px){
+  .room-header h2{ font-size: 1.2rem; }
+  .ann-title{ font-size: 1rem; }
+}
