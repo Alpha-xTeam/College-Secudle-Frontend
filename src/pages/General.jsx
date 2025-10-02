@@ -3,6 +3,8 @@ import { Container, Row, Col, Card, Button, Alert, Spinner, Form, Modal, Badge }
 import { schedulesAPI } from '../api/schedules';
 import { getAuthHeaders } from '../utils/auth';
 import axios from 'axios';
+import { FOOTER_TEAM_MEMBERS } from '../components/Footer';
+import { getMainLogo } from '../config/teamConfig';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://hsabadi.pythonanywhere.com';
 
@@ -16,6 +18,19 @@ const General = () => {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [roomSchedule, setRoomSchedule] = useState(null);
   const [scheduleLoading, setScheduleLoading] = useState(false);
+  // Developers modal state
+  const [selectedDev, setSelectedDev] = useState(null);
+  const [showDevModal, setShowDevModal] = useState(false);
+
+  const openDevModal = (dev) => {
+    setSelectedDev(dev);
+    setShowDevModal(true);
+  };
+
+  const closeDevModal = () => {
+    setShowDevModal(false);
+    setSelectedDev(null);
+  };
 
   // تحديد يوم بغداد الحالي
   const baghdadTodayKey = useMemo(() => {
@@ -106,17 +121,41 @@ const General = () => {
       .lecture-details .icon { font-size:1.15rem; color:#4b5563; }
       .badge-type { padding: .45rem .6rem; border-radius: 999px; font-weight:600; }
 
-      @media(max-width: 576px) {
-        .lecture-card { flex-direction: row-reverse; align-items:center; gap:10px; padding: .6rem; }
-        .order-badge { width:32px; height:32px; font-size:0.9rem; }
-        .order-badge::after { display:none; }
-        .lecture-meta { flex-direction:column; align-items:stretch; gap: .6rem; }
-        .lecture-details { gap:.6rem; }
-        .lecture-details .icon { font-size:1rem; }
+      /* Site info & features */
+      .site-info-row { margin-top: 0.5rem; }
+      .site-info-card { border-radius: 12px; background: #fff; padding: 1rem; box-shadow: 0 10px 30px rgba(20,30,60,0.04); border: 1px solid rgba(20,30,60,0.04); }
+      .site-logo { width:72px; height:72px; border-radius:14px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:28px; box-shadow:0 6px 20px rgba(99,102,241,0.12); }
+      .feature-list { display:flex; flex-direction:column; gap:.6rem; }
+      .feature-item { display:flex; gap:.8rem; align-items:flex-start; color:#374151; }
+      .feature-item .icon { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:8px; background:#f1f5f9; color:#2563eb; }
+
+      /* Developers section */
+      .devs-section { background: transparent; }
+      .devs-grid { display:grid; grid-template-columns: repeat(1, 1fr); gap: .9rem; }
+      @media(min-width: 576px){ .devs-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media(min-width: 992px){ .devs-grid { grid-template-columns: repeat(3, 1fr); } }
+      .dev-card { display:flex; gap:.75rem; align-items:center; padding:.8rem; border-radius:10px; background:#fff; border:1px solid rgba(20,30,60,0.04); box-shadow:0 6px 18px rgba(20,30,60,0.04); }
+      .dev-avatar { width:56px; height:56px; border-radius:12px; object-fit:cover; border:3px solid rgba(0,0,0,0.03); }
+      .dev-name { font-weight:700; color:#0f172a; }
+      .dev-role { color:#6b7280; font-size:.9rem; }
+
+      /* Small responsive tweaks */
+      @media(max-width: 420px){ .site-logo{ width:56px; height:56px; font-size:22px; } .dev-avatar{ width:48px; height:48px; } }
+
+      /* Developers responsive behavior */
+      @media(max-width: 768px) {
+        .devs-grid { grid-template-columns: 1fr; }
+        .dev-card { flex-direction: column; align-items: center; text-align: center; gap: .5rem; }
+        .dev-card .dev-avatar { width: 80px; height: 80px; border-radius: 50%; margin-bottom: .4rem; }
+        .dev-card .dev-role { font-size: .95rem; }
+        .dev-card .btn { width: 100%; }
       }
-      @media(max-width: 400px) {
-        .order-badge { width:28px; height:28px; font-size:0.85rem; }
-      }
+
+      /* Developer modal styles */
+      .dev-modal-dialog .modal-content { border-radius: 12px; overflow: hidden; }
+      .dev-modal-header { color: white; padding: 1rem 1.25rem; display:flex; align-items:center; gap: .75rem; }
+      .dev-modal-avatar { width:140px; height:140px; border-radius:12px; object-fit:cover; border:4px solid rgba(255,255,255,0.2); }
+
     `;
     document.head.appendChild(styleElement);
     
@@ -289,6 +328,91 @@ const General = () => {
                 </Form.Select>
               </Form.Group>
 
+              {/* -- BEGIN: Site info + Developers (New) -- */}
+              <Row className="site-info-row g-3 mb-4">
+                <Col md={6}>
+                  <div className="site-info-card">
+                    <div className="d-flex gap-3 align-items-start">
+                      <div className="site-logo" aria-hidden style={{display:'flex', alignItems:'center', justifyContent:'center'}}>
+                        {(() => {
+                          const logo = getMainLogo();
+                          if (logo.type === 'image') {
+                            return (
+                              <img
+                                src={logo.src}
+                                alt={logo.alt}
+                                style={{
+                                  width: logo.style.width,
+                                  height: logo.style.height,
+                                  borderRadius: logo.style.borderRadius || '12px',
+                                  objectFit: logo.style.objectFit || 'cover',
+                                  border: logo.style.border || 'none',
+                                  boxShadow: logo.style.boxShadow || 'none'
+                                }}
+                              />
+                            );
+                          }
+                          return (
+                            <span style={logo.style}>{logo.icon}</span>
+                          );
+                        })()}
+                      </div>
+                      <div>
+                        <h5 className="mb-1" style={{fontWeight:800}}>نظام إدارة جداول الكلية</h5>
+                        <p className="text-muted mb-2" style={{maxWidth: '42rem'}}>واجهة نظيفة وسريعة لعرض وإدارة جداول المحاضرات والقيود الزمنية لكل قاعة، مع إمكانية البحث، التنبيهات، وتصدير الجداول بصيغ متعددة.</p>
+                        <div className="feature-list">
+                          <div className="feature-item">
+                            <div className="icon"><i className="fas fa-shield-alt"></i></div>
+                            <div>
+                              <div style={{fontWeight:700}}>أمن وموثوق</div>
+                              <div className="text-muted small">حماية للبيانات ودعم صلاحيات متعددة للمستخدمين</div>
+                            </div>
+                          </div>
+                          <div className="feature-item">
+                            <div className="icon"><i className="fas fa-mobile-alt"></i></div>
+                            <div>
+                              <div style={{fontWeight:700}}>متجاوب وسهل الاستخدام</div>
+                              <div className="text-muted small">تصميم يعمل بسلاسة على الهواتف والحواسب</div>
+                            </div>
+                          </div>
+                          <div className="feature-item">
+                            <div className="icon"><i className="fas fa-sync-alt"></i></div>
+                            <div>
+                              <div style={{fontWeight:700}}>تحديثات آنية</div>
+                              <div className="text-muted small">تزامن مع السيرفر لتحديث الجداول تلقائياً</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Col>
+
+                <Col md={6} className="devs-section">
+                  <div className="site-info-card">
+                    <div className="d-flex align-items-center justify-content-between mb-2">
+                      <h5 className="mb-0" style={{fontWeight:800}}>مطوروا الموقع</h5>
+                      <small className="text-muted">فريق Alpha</small>
+                    </div>
+                    <div className="devs-grid">
+                      {FOOTER_TEAM_MEMBERS.map((dev, i) => (
+                        <div key={i} className="dev-card">
+                          <img src={dev.imagePath} alt={dev.name} className="dev-avatar" onError={(e)=>{ e.target.src = '/images/team/default-avatar.png'; }} />
+                          <div style={{flex:1}}>
+                            <div className="dev-name">{dev.name}</div>
+                            <div className="dev-role">{dev.role}</div>
+                          </div>
+                          <div style={{display:'flex', gap:8}}>
+                            <button className="btn btn-outline-primary btn-sm" onClick={()=>openDevModal(dev)}>عرض الملف</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+              {/* -- END: Site info + Developers (New) -- */}
+
               {loading && (
                 <div className="text-center py-4">
                   <Spinner animation="border" variant="primary" />
@@ -417,6 +541,25 @@ const General = () => {
             إغلاق
           </Button>
         </Modal.Footer>
+      </Modal>
+
+      {/* Developer Details Modal */}
+      <Modal show={showDevModal} onHide={closeDevModal} centered dialogClassName="dev-modal-dialog">
+        <div className="modal-content">
+          <div className="dev-modal-header" style={{background: selectedDev?.gradient || 'linear-gradient(135deg,#6a11cb,#2575fc)'}}>
+            <img src={selectedDev?.imagePath} alt={selectedDev?.name} className="dev-modal-avatar" onError={(e)=>{ e.target.src='/images/team/default-avatar.png'; }} />
+            <div style={{flex:1}}>
+              <h5 className="mb-0" style={{fontWeight:800}}>{selectedDev?.name}</h5>
+              <div className="text-white small" style={{opacity:.95}}>{selectedDev?.role}</div>
+            </div>
+            <div style={{marginLeft:8}}>
+              <button className="btn btn-light btn-sm" onClick={closeDevModal}>إغلاق</button>
+            </div>
+          </div>
+          <div className="modal-body p-4" style={{background:'#f8fafc'}}>
+            <p className="text-muted lh-lg">{selectedDev?.bio || 'لا توجد سيرة متوفرة.'}</p>
+          </div>
+        </div>
       </Modal>
     </Container>
   );
