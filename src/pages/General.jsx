@@ -1,568 +1,563 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Container, Row, Col, Card, Button, Alert, Spinner, Form, Modal, Badge } from 'react-bootstrap';
-import { schedulesAPI } from '../api/schedules';
-import { getAuthHeaders } from '../utils/auth';
-import axios from 'axios';
-import { FOOTER_TEAM_MEMBERS } from '../components/Footer';
-import { getMainLogo } from '../config/teamConfig';
+import { useState } from 'react';
+import { Modal, Button } from 'react-bootstrap';
+import { TEAM_CONFIG, getFooterLogo } from '../config/teamConfig';
+import '../styles/Footer.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://hsabadi.pythonanywhere.com';
+// Exported team members so other pages (e.g., General.jsx) can reuse developer info
+export const FOOTER_TEAM_MEMBERS = [
+  {
+    name: 'حسين حيدر صبيح',
+    imagePath: '/images/team/hussein-haidar.png',
+    role: 'قائد فريق Alpha',
+    bio: 'قائد فريق Alpha المسؤول عن إدارة الفريق وتطوير الحلول التقنية المبتكرة',
+    color: '#dc2626',
+    gradient: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)'
+  },
+  {
+    name: 'حسن علي حسن صالح',
+    imagePath: '/images/team/hassan-ali.png',
+    role: 'عضو في فريق Alpha قسم التطوير',
+    bio: 'عضو قسم التطوير المتخصص في بناء الحلول التقنية والواجهات التفاعلية',
+    color: '#10b981',
+    gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+  }
+];
 
-const General = () => {
-  const [departments, setDepartments] = useState([]);
-  const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+const Footer = () => {
+  // Default values (no context dependency)
+  const isDark = false; // Default to light theme
+  const version = '2.1.0';
+  const companyName = 'نظام إدارة جداول الكلية';
+  const buildTime = new Date().toISOString();
+  const currentYear = new Date().getFullYear();
+
+  // Format build time in Arabic locale with date and time
+  const buildDateFormatted = new Intl.DateTimeFormat('ar-SA', {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  }).format(new Date(buildTime));
+
+  // Use exported members list for rendering
+  const teamMembers = FOOTER_TEAM_MEMBERS;
+
+  // State for modal
+  const [selectedMember, setSelectedMember] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState(null);
-  const [roomSchedule, setRoomSchedule] = useState(null);
-  const [scheduleLoading, setScheduleLoading] = useState(false);
-  // Developers modal state
-  const [selectedDev, setSelectedDev] = useState(null);
-  const [showDevModal, setShowDevModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
 
-  const openDevModal = (dev) => {
-    setSelectedDev(dev);
-    setShowDevModal(true);
-  };
-
-  const closeDevModal = () => {
-    setShowDevModal(false);
-    setSelectedDev(null);
-  };
-
-  // تحديد يوم بغداد الحالي
-  const baghdadTodayKey = useMemo(() => {
-    try {
-      const baghdadNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Baghdad' }));
-      const dayIndex = baghdadNow.getDay(); // 0..6 بدءاً من الأحد
-      const keys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-      return keys[dayIndex];
-    } catch (e) {
-      return null;
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchDepartments();
-    
-    // إضافة أنماط CSS مخصصة
-    const styleElement = document.createElement('style');
-    styleElement.textContent = `
-      /* Page layout */
-      .general-page {
-        background: linear-gradient(180deg, #f4f7fb 0%, #eef3fb 100%);
-        min-height: 100vh;
-        padding: 2rem 0;
-      }
-      .general-card {
-        border: 0;
-        border-radius: 14px;
-        box-shadow: 0 12px 30px rgba(37, 50, 75, 0.08);
-        background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(250,250,255,0.9) 100%);
-      }
-      .general-header {
-        background: linear-gradient(90deg, #1e88e5 0%, #6a11cb 100%);
-        border-radius: 14px 14px 0 0;
-        color: #fff;
-        padding: 1.1rem 1.25rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .general-header .title {
-        font-weight: 600;
-        font-size: 1.25rem;
-      }
-      .general-header .subtitle {
-        opacity: 0.9;
-        font-size: 0.95rem;
-      }
-
-      /* Room card */
-      .rooms-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 1rem; }
-      @media(min-width: 576px){ .rooms-grid { grid-template-columns: repeat(2, 1fr); } }
-      @media(min-width: 992px){ .rooms-grid { grid-template-columns: repeat(3, 1fr); } }
-
-      .room-card {
-        border-radius: 12px;
-        overflow: hidden;
-        background: #fff;
-        transition: transform .22s ease, box-shadow .22s ease;
-        display: flex;
-        flex-direction: column;
-        min-height: 180px;
-        padding: 1rem;
-        border: 1px solid rgba(20,30,60,0.04);
-      }
-      .room-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 14px 30px rgba(34, 60, 80, 0.08);
-      }
-      .room-card .room-meta { display:flex; align-items:center; justify-content:space-between; gap: .6rem; }
-      .room-card .room-title { font-size: 1.1rem; font-weight: 600; color: #1162b0; }
-      .room-card .room-code { color: #6b7280; font-size: .9rem; }
-      .room-card .room-actions { margin-top: auto; display:flex; gap:.6rem; }
-
-      .btn-modern {
-        background: linear-gradient(90deg,#6a11cb,#2575fc); color:white; border:0; padding: .6rem 1rem; border-radius:8px; display:inline-flex; align-items:center; gap:.6rem;
-      }
-      .btn-modern:focus{ box-shadow:0 6px 18px rgba(90,60,150,0.12); }
-
-      /* Modal lecture styles */
-      .lecture-list { display:flex; flex-direction:column; gap:.8rem; }
-      .lecture-card { border-radius:10px; border:0; box-shadow:0 8px 20px rgba(25,35,60,0.05); padding: .9rem 1rem; background:#fff; margin-bottom:.8rem; display:flex; gap:12px; align-items:flex-start; }
-      .order-badge { position:relative; width:40px; height:40px; border-radius:50%; background: linear-gradient(90deg,#6a11cb,#2575fc); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; box-shadow:0 6px 18px rgba(90,60,150,0.12); flex-shrink:0; line-height:1; }
-      /* Small connector line to visually group items (subtle) — absolutely positioned so it doesn't affect centering */
-      .order-badge::after { content: ''; position:absolute; bottom:-8px; left:50%; transform:translateX(-50%); width:2px; height:12px; background: rgba(16,24,40,0.06); border-radius:1px; }
-      .lecture-meta { flex:1; display:flex; justify-content:space-between; gap:1rem; align-items:center; }
-      .lecture-details { display:flex; gap:1rem; align-items:center; }
-      .lecture-details .icon { font-size:1.15rem; color:#4b5563; }
-      .badge-type { padding: .45rem .6rem; border-radius: 999px; font-weight:600; }
-
-      /* Site info & features */
-      .site-info-row { margin-top: 0.5rem; }
-      .site-info-card { border-radius: 12px; background: #fff; padding: 1rem; box-shadow: 0 10px 30px rgba(20,30,60,0.04); border: 1px solid rgba(20,30,60,0.04); }
-      .site-logo { width:72px; height:72px; border-radius:14px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:28px; box-shadow:0 6px 20px rgba(99,102,241,0.12); }
-      .feature-list { display:flex; flex-direction:column; gap:.6rem; }
-      .feature-item { display:flex; gap:.8rem; align-items:flex-start; color:#374151; }
-      .feature-item .icon { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:8px; background:#f1f5f9; color:#2563eb; }
-
-      /* Developers section */
-      .devs-section { background: transparent; }
-      .devs-grid { display:grid; grid-template-columns: repeat(1, 1fr); gap: .9rem; }
-      @media(min-width: 576px){ .devs-grid { grid-template-columns: repeat(2, 1fr); } }
-      @media(min-width: 992px){ .devs-grid { grid-template-columns: repeat(3, 1fr); } }
-      .dev-card { display:flex; gap:.75rem; align-items:center; padding:.8rem; border-radius:10px; background:#fff; border:1px solid rgba(20,30,60,0.04); box-shadow:0 6px 18px rgba(20,30,60,0.04); }
-      .dev-avatar { width:56px; height:56px; border-radius:12px; object-fit:cover; border:3px solid rgba(0,0,0,0.03); }
-      .dev-name { font-weight:700; color:#0f172a; }
-      .dev-role { color:#6b7280; font-size:.9rem; }
-
-      /* Small responsive tweaks */
-      @media(max-width: 420px){ .site-logo{ width:56px; height:56px; font-size:22px; } .dev-avatar{ width:48px; height:48px; } }
-
-      /* Developers responsive behavior */
-      @media(max-width: 768px) {
-        .devs-grid { grid-template-columns: 1fr; }
-        .dev-card { flex-direction: column; align-items: center; text-align: center; gap: .5rem; }
-        .dev-card .dev-avatar { width: 80px; height: 80px; border-radius: 50%; margin-bottom: .4rem; }
-        .dev-card .dev-role { font-size: .95rem; }
-        .dev-card .btn { width: 100%; }
-      }
-
-      /* Developer modal styles */
-      .dev-modal-dialog .modal-content { border-radius: 12px; overflow: hidden; }
-      .dev-modal-header { color: white; padding: 1rem 1.25rem; display:flex; align-items:center; gap: .75rem; }
-      .dev-modal-avatar { width:140px; height:140px; border-radius:12px; object-fit:cover; border:4px solid rgba(255,255,255,0.2); }
-
-    `;
-    document.head.appendChild(styleElement);
-    
-    return () => {
-      const existingStyle = document.head.querySelector('style');
-      if (existingStyle) {
-        existingStyle.remove();
-      }
-    };
-  }, []);
-
-  const fetchDepartments = async () => {
-    try {
-      setLoading(true);
-      const response = await schedulesAPI.getDepartments();
-      if (response.success) {
-        setDepartments(response.data);
-      } else {
-        setError('فشل في جلب الأقسام');
-      }
-    } catch (err) {
-      console.error('fetchDepartments error', err);
-      if (err && (err.code === 'ECONNABORTED' || (err.message && err.message.toLowerCase().includes('aborted') || err.message && err.message.toLowerCase().includes('timeout')))) {
-        setError('انتهى وقت الطلب. يرجى المحاولة مرة أخرى.');
-      } else {
-        setError('خطأ في جلب الأقسام');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDepartmentChange = async (e) => {
-    const departmentId = e.target.value;
-    setSelectedDepartment(departmentId);
-    if (departmentId) {
-      await fetchRooms(departmentId);
-    } else {
-      setRooms([]);
-    }
-  };
-
-  const fetchRooms = async (departmentId) => {
-    try {
-      setLoading(true);
-      const response = await schedulesAPI.searchRooms('', departmentId);
-      if (response.success) {
-        setRooms(response.data);
-      } else {
-        setError('فشل في جلب القاعات');
-      }
-    } catch (err) {
-      console.error('fetchRooms error', err);
-      if (err && (err.code === 'ECONNABORTED' || (err.message && err.message.toLowerCase().includes('aborted') || err.message && err.message.toLowerCase().includes('timeout')))) {
-        setError('انتهى وقت الطلب أثناء جلب القاعات. حاول مرة أخرى.');
-      } else {
-        setError('خطأ في جلب القاعات');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const viewTodayLectures = async (room) => {
-    setSelectedRoom(room);
+  // Handle member click
+  const handleMemberClick = (member) => {
+    setSelectedMember(member);
     setShowModal(true);
-    setScheduleLoading(true);
-    try {
-      // Function to infer study type based on Baghdad local time
-      const inferStudyType = () => {
-        try {
-          const baghdadNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Baghdad' }));
-          const hour = baghdadNow.getHours();
-          // Consider evening starting from 16:00 (4pm). Adjust as needed.
-          return hour >= 16 ? 'evening' : 'morning';
-        } catch (e) {
-          return 'morning';
-        }
-      };
-
-      const primaryType = inferStudyType();
-      const secondaryType = primaryType === 'morning' ? 'evening' : 'morning';
-
-      // First try the inferred study type
-      let response = await schedulesAPI.getRoomSchedule(room.code, primaryType);
-      // If the response doesn't contain schedule data, try the other study type
-      if (!(response && response.success && response.data && response.data.schedule && Object.keys(response.data.schedule).length > 0)) {
-        const fallback = await schedulesAPI.getRoomSchedule(room.code, secondaryType);
-        if (fallback && fallback.success && fallback.data && fallback.data.schedule && Object.keys(fallback.data.schedule).length > 0) {
-          response = fallback;
-        }
-      }
-
-      if (response && response.success) {
-        setRoomSchedule(response.data);
-      } else {
-        setError('فشل في جلب جدول القاعة');
-      }
-    } catch (err) {
-      console.error('viewTodayLectures error', err);
-      if (err && (err.code === 'ECONNABORTED' || (err.message && err.message.toLowerCase().includes('aborted') || err.message && err.message.toLowerCase().includes('timeout')))) {
-        setError('انتهى وقت الطلب أثناء جلب جدول القاعة. يرجى المحاولة مرة أخرى.');
-      } else {
-        setError('خطأ في جلب جدول القاعة');
-      }
-    } finally {
-      setScheduleLoading(false);
-    }
   };
 
-  const closeModal = () => {
+  // Handle image click
+  const handleImageClick = () => {
+    setShowImageModal(true);
+  };
+
+  // Close modal
+  const handleCloseModal = () => {
     setShowModal(false);
-    setSelectedRoom(null);
-    setRoomSchedule(null);
+    setSelectedMember(null);
   };
 
-  // الحصول على المحاضرات اليومية
-  const todayLectures = useMemo(() => {
-    if (!roomSchedule || !baghdadTodayKey || !roomSchedule.schedule) return [];
-    const dayData = roomSchedule.schedule[baghdadTodayKey] || {};
-    const lectures = [];
-    Object.keys(dayData).forEach(stage => {
-      if (Array.isArray(dayData[stage])) {
-        dayData[stage].forEach(lecture => {
-          lectures.push({ ...lecture, stage });
-        });
-      }
-    });
-    const timeToSeconds = (t) => {
-      if (!t) return 0;
-      const parts = t.split(':');
-      const hh = parseInt(parts[0], 10) || 0;
-      const mm = parseInt(parts[1], 10) || 0;
-      const ss = parseInt(parts[2], 10) || 0;
-      return hh * 3600 + mm * 60 + ss;
-    };
-
-    return lectures.sort((a, b) => {
-      const aStart = a.postponed_start_time || a.start_time || '';
-      const bStart = b.postponed_start_time || b.start_time || '';
-      return timeToSeconds(aStart) - timeToSeconds(bStart);
-    });
-  }, [roomSchedule, baghdadTodayKey]);
+  // Close image modal
+  const handleCloseImageModal = () => {
+    setShowImageModal(false);
+  };
 
   return (
-    <Container fluid className="general-page">
-      <Row className="justify-content-center">
-        <Col md={10}>
-          <Card className="general-card">
-            <Card.Header className="general-header">
-              <h4 className="mb-0">صفحة عامة</h4>
-            </Card.Header>
-            <Card.Body>
-              {error && <Alert variant="danger">{error}</Alert>}
-
-              <Form.Group className="mb-4">
-                <Form.Label className="fw-bold">اختر القسم:</Form.Label>
-                <Form.Select
-                  value={selectedDepartment}
-                  onChange={handleDepartmentChange}
-                  disabled={loading}
-                  className="form-control-lg"
-                >
-                  <option value="">اختر قسم...</option>
-                  {departments.map(dept => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-
-              {/* -- BEGIN: Site info + Developers (New) -- */}
-              <Row className="site-info-row g-3 mb-4">
-                <Col md={6}>
-                  <div className="site-info-card">
-                    <div className="d-flex gap-3 align-items-start">
-                      <div className="site-logo" aria-hidden style={{display:'flex', alignItems:'center', justifyContent:'center'}}>
-                        {(() => {
-                          const logo = getMainLogo();
-                          if (logo.type === 'image') {
-                            return (
-                              <img
-                                src={logo.src}
-                                alt={logo.alt}
-                                style={{
-                                  width: logo.style.width,
-                                  height: logo.style.height,
-                                  borderRadius: logo.style.borderRadius || '12px',
-                                  objectFit: logo.style.objectFit || 'cover',
-                                  border: logo.style.border || 'none',
-                                  boxShadow: logo.style.boxShadow || 'none'
-                                }}
-                              />
-                            );
-                          }
-                          return (
-                            <span style={logo.style}>{logo.icon}</span>
-                          );
-                        })()}
-                      </div>
-                      <div>
-                        <h5 className="mb-1" style={{fontWeight:800}}>نظام إدارة جداول الكلية</h5>
-                        <p className="text-muted mb-2" style={{maxWidth: '42rem'}}>واجهة نظيفة وسريعة لعرض وإدارة جداول المحاضرات والقيود الزمنية لكل قاعة، مع إمكانية البحث، التنبيهات، وتصدير الجداول بصيغ متعددة.</p>
-                        <div className="feature-list">
-                          <div className="feature-item">
-                            <div className="icon"><i className="fas fa-shield-alt"></i></div>
-                            <div>
-                              <div style={{fontWeight:700}}>أمن وموثوق</div>
-                              <div className="text-muted small">حماية للبيانات ودعم صلاحيات متعددة للمستخدمين</div>
-                            </div>
-                          </div>
-                          <div className="feature-item">
-                            <div className="icon"><i className="fas fa-mobile-alt"></i></div>
-                            <div>
-                              <div style={{fontWeight:700}}>متجاوب وسهل الاستخدام</div>
-                              <div className="text-muted small">تصميم يعمل بسلاسة على الهواتف والحواسب</div>
-                            </div>
-                          </div>
-                          <div className="feature-item">
-                            <div className="icon"><i className="fas fa-sync-alt"></i></div>
-                            <div>
-                              <div style={{fontWeight:700}}>تحديثات آنية</div>
-                              <div className="text-muted small">تزامن مع السيرفر لتحديث الجداول تلقائياً</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+    <footer 
+      className={`footer${isDark ? ' footer--dark' : ''}`} 
+      aria-label="تذييل الصفحة"
+      style={{
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+        borderTop: '1px solid rgba(148, 163, 184, 0.2)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+    >
+      {/* Background Pattern */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+                           radial-gradient(circle at 75% 75%, rgba(16, 185, 129, 0.05) 0%, transparent 50%)`,
+          pointerEvents: 'none'
+        }}
+      />
+      
+      <div className="container py-5 position-relative">
+        {/* معلومات الإصدار والشركة */}
+        <div className="row mb-5">
+          <div className="col-12">
+            <div 
+              className="p-4 rounded-4 shadow-sm"
+              style={{
+                background: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}
+            >
+              <div className="d-flex flex-column gap-3">
+                <div className="d-flex align-items-center gap-3">
+                  <div 
+                    className="d-flex align-items-center justify-content-center rounded-3"
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                      color: 'white'
+                    }}
+                  >
+                    <i className="fas fa-graduation-cap fs-5"></i>
                   </div>
-                </Col>
-
-                <Col md={6} className="devs-section">
-                  <div className="site-info-card">
-                    <div className="d-flex align-items-center justify-content-between mb-2">
-                      <h5 className="mb-0" style={{fontWeight:800}}>مطوروا الموقع</h5>
-                      <small className="text-muted">فريق Alpha</small>
-                    </div>
-                    <div className="devs-grid">
-                      {FOOTER_TEAM_MEMBERS.map((dev, i) => (
-                        <div key={i} className="dev-card">
-                          <img src={dev.imagePath} alt={dev.name} className="dev-avatar" onError={(e)=>{ e.target.src = '/images/team/default-avatar.png'; }} />
-                          <div style={{flex:1}}>
-                            <div className="dev-name">{dev.name}</div>
-                            <div className="dev-role">{dev.role}</div>
-                          </div>
-                          <div style={{display:'flex', gap:8}}>
-                            <button className="btn btn-outline-primary btn-sm" onClick={()=>openDevModal(dev)}>عرض الملف</button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </Col>
-              </Row>
-              {/* -- END: Site info + Developers (New) -- */}
-
-              {loading && (
-                <div className="text-center py-4">
-                  <Spinner animation="border" variant="primary" />
-                  <p className="mt-2">جاري التحميل...</p>
-                </div>
-              )}
-
-              {selectedDepartment && rooms.length > 0 && (
-                <div>
-                  <h5 className="mb-4">القاعات في هذا القسم:</h5>
-                  <div className="rooms-grid">
-                    {rooms.map(room => (
-                      <div key={room.id} className="room-card">
-                        <div className="room-meta">
-                          <div>
-                            <div className="room-title"><i className="fa fa-door-open me-2" aria-hidden="true"></i> {room.name}</div>
-                            <div className="room-code">{room.code} • السعة: {room.capacity || '—'}</div>
-                          </div>
-                          <div className="text-end">
-                            <div className="badge bg-light text-dark">{room.department?.name || 'عام'}</div>
-                          </div>
-                        </div>
-                        <div style={{height:16}} />
-                        <div className="room-actions">
-                          <button className="btn-modern" onClick={() => viewTodayLectures(room)}>
-                            <i className="fa fa-eye"/> <span>رؤية محاضرات اليوم</span>
-                          </button>
-                          <a className="btn btn-outline-secondary" href={`/room/${room.code}`}>
-                            <i className="fa fa-external-link-alt"/> عرض القاعة
-                          </a>
-                        </div>
-                      </div>
-                    ))}
+                  <div>
+                    <h6 className="mb-1 fw-bold text-dark">{companyName}</h6>
+                    <small className="text-muted">
+                      &copy; {currentYear} — جميع الحقوق محفوظة
+                    </small>
                   </div>
                 </div>
-              )}
-
-              {selectedDepartment && rooms.length === 0 && !loading && (
-                <Alert variant="info" className="text-center">
-                  لا توجد قاعات في هذا القسم
-                </Alert>
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Modal لعرض المحاضرات اليومية */}
-      <Modal show={showModal} onHide={closeModal} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>
-            محاضرات اليوم - {selectedRoom?.name} ({selectedRoom?.code})
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {scheduleLoading ? (
-            <div className="text-center">
-              <Spinner animation="border" />
-              <p>جاري تحميل الجدول...</p>
-            </div>
-          ) : todayLectures.length > 0 ? (
-            <div>
-              {todayLectures.map((lecture, index) => {
-                // Determine displayed doctor name
-                const doctorName = lecture.primary_doctor_name || lecture.doctor_name || (lecture.schedule_doctors && lecture.schedule_doctors.length ? (lecture.schedule_doctors[0].doctors && lecture.schedule_doctors[0].doctors.name) : null) || 'غير محدد';
-                // Collect assistant doctors (non-primary)
-                const assistantNames = (lecture.schedule_doctors || [])
-                  .filter(sd => !sd.is_primary)
-                  .map(sd => sd && sd.doctors && sd.doctors.name)
-                  .filter(Boolean);
-                // Map English stage keys to Arabic
-                const stageKey = (lecture.stage || lecture.academic_stage || '').toString().toLowerCase();
-                const stageArabicMap = { first: 'المرحلة الأولى', second: 'المرحلة الثانية', third: 'المرحلة الثالثة', fourth: 'المرحلة الرابعة' };
-                const stageText = stageArabicMap[stageKey] || (lecture.stage || lecture.academic_stage || 'غير محدد');
-                // Determine group/section display
-                const groupText = lecture.group || lecture.group_letter || lecture.group_name || 'غير محدد';
-                const sectionText = lecture.section || lecture.section_number || lecture.section_name || 'غير محدد';
-                const typeIsTheoretical = lecture.lecture_type === 'theoretical';
-                // Determine study time (morning/evening)
-                const studyType = (roomSchedule && roomSchedule.study_type) || lecture.study_type || 'morning';
-                return (
-                 <div key={index} className="lecture-card">
-                   <div className="order-badge">{index + 1}</div>
-                   <div className="lecture-meta">
-                     <div className="lecture-details">
-                       <i className="fa fa-book icon" aria-hidden="true"></i>
-                       <div>
-                         <div style={{fontWeight:700}}>{lecture.subject_name || 'مادة غير محددة'}</div>
-                        <div style={{color:'#6b7280', fontSize:'.95rem'}}>
-                          <i className="fa fa-user me-2"></i> {doctorName}
-                        </div>
-                        {assistantNames.length > 0 && (
-                          <div style={{color:'#6b7280', fontSize:'.9rem', marginTop:6}}>
-                            <i className="fa fa-user-friends me-2" />
-                            <strong>مساعدون:</strong> {assistantNames.join(', ')}
-                          </div>
-                        )}
-                        <div style={{color:'#6b7280', fontSize:'.9rem', marginTop:4}}>
-                          <i className="fa fa-layer-group me-2"></i>
-                          {typeIsTheoretical ? `شعبة: ${sectionText}` : `كروب: ${groupText}`}
-                        </div>
-                       </div>
-                     </div>
-                     <div style={{textAlign:'right'}}>
-                       <div style={{marginBottom:6}}><i className="fa fa-clock me-2"/> {lecture.start_time} - {lecture.end_time}</div>
-                       <div style={{display:'flex', justifyContent:'flex-end', gap:10, alignItems:'center'}}>
-                         <span className={`badge-type ${lecture.lecture_type === 'theoretical' ? 'bg-info text-white' : 'bg-success text-white'}`}>{lecture.lecture_type === 'theoretical' ? 'نظري' : 'عملي'}</span>
-                         <span className="badge bg-secondary">{stageText}</span>
-                         <span className={`badge ${studyType === 'morning' ? 'bg-warning text-dark' : 'bg-dark text-white'}`}>
-                           <i className={`fa ${studyType === 'morning' ? 'fa-sun' : 'fa-moon'} me-1`}></i>
-                           {studyType === 'morning' ? 'صباحي' : 'مسائي'}
-                         </span>
-                       </div>
-                     </div>
-                   </div>
+                
+                <div className="d-flex align-items-center flex-wrap gap-4">
+                  <div className="d-flex align-items-center gap-2">
+                    <span 
+                      className="badge rounded-pill px-3 py-2"
+                      style={{
+                        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                        color: 'white'
+                      }}
+                    >
+                      <i className="fas fa-code-branch me-1"></i>
+                      الإصدار {version}
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2 text-muted">
+                    <i className="fas fa-clock"></i>
+                    <small>آخر تحديث: {buildDateFormatted}</small>
+                  </div>
                 </div>
-                );
-               })}
+              </div>
             </div>
-           ) : (
-             <Alert variant="info">لا توجد محاضرات اليوم في هذه القاعة</Alert>
-           )}
-         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={closeModal}>
-            إغلاق
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Developer Details Modal */}
-      <Modal show={showDevModal} onHide={closeDevModal} centered dialogClassName="dev-modal-dialog">
-        <div className="modal-content">
-          <div className="dev-modal-header" style={{background: selectedDev?.gradient || 'linear-gradient(135deg,#6a11cb,#2575fc)'}}>
-            <img src={selectedDev?.imagePath} alt={selectedDev?.name} className="dev-modal-avatar" onError={(e)=>{ e.target.src='/images/team/default-avatar.png'; }} />
-            <div style={{flex:1}}>
-              <h5 className="mb-0" style={{fontWeight:800}}>{selectedDev?.name}</h5>
-              <div className="text-white small" style={{opacity:.95}}>{selectedDev?.role}</div>
-            </div>
-            <div style={{marginLeft:8}}>
-              <button className="btn btn-light btn-sm" onClick={closeDevModal}>إغلاق</button>
-            </div>
-          </div>
-          <div className="modal-body p-4" style={{background:'#f8fafc'}}>
-            <p className="text-muted lh-lg">{selectedDev?.bio || 'لا توجد سيرة متوفرة.'}</p>
           </div>
         </div>
-      </Modal>
-    </Container>
+
+        {/* قسم الفريق */}
+        <div className="row">
+          <div className="col-12">
+            <div className="text-center mb-5">
+              {/* شعار واسم الفريق */}
+              <div className="d-flex align-items-center justify-content-center gap-4 mb-4">
+                {(() => {
+                  const logoConfig = getFooterLogo();
+                  return (
+                    <div 
+                      className="d-flex align-items-center justify-content-center rounded-4 shadow-sm"
+                      style={{
+                        width: '80px',
+                        height: '80px',
+                        background: logoConfig.type === 'icon' 
+                          ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' 
+                          : 'transparent',
+                        border: logoConfig.type === 'icon' ? 'none' : '3px solid rgba(99, 102, 241, 0.2)'
+                      }}
+                    >
+                      {logoConfig.type === 'image' ? (
+                        <img 
+                          src={logoConfig.src}
+                          alt={logoConfig.alt}
+                          style={{
+                            ...logoConfig.style,
+                            borderRadius: '16px'
+                          }}
+                        />
+                      ) : (
+                        <span style={{
+                          ...logoConfig.style,
+                          fontSize: '32px',
+                          color: 'white'
+                        }}>
+                          {logoConfig.icon}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
+                <div className="text-start">
+                  <h3 
+                    className="mb-2 fw-bold"
+                    style={{
+                      background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text'
+                    }}
+                  >
+                    {TEAM_CONFIG.teamNameArabic}
+                  </h3>
+                  <p className="text-muted mb-0 fs-6">
+                    {TEAM_CONFIG.fullName}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-5">
+                <h4 
+                  className="fw-bold mb-3 d-flex align-items-center justify-content-center"
+                  style={{
+                    background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}
+                >
+                  <i className="fas fa-users team-section-icon me-2" aria-hidden></i>
+                  فريق التطوير
+                </h4>
+                <p className="text-muted">
+                  نخبة من المطورين المتخصصين في بناء الحلول التقنية المبتكرة
+                </p>
+              </div>
+
+              <div className="row justify-content-center g-4">
+                {teamMembers.map((member, index) => (
+                  <div key={index} className="col-12 col-md-6 col-lg-5">
+                    <div 
+                      className="team-member-card h-100 p-4 rounded-4 shadow-sm position-relative overflow-hidden"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)'
+                      }}
+                      onClick={() => handleMemberClick(member)}
+                    >
+                      {/* Background Gradient */}
+                      <div 
+                        className="position-absolute top-0 start-0 w-100"
+                        style={{
+                          height: '4px',
+                          background: member.gradient
+                        }}
+                      />
+                      
+                      {/* صورة العضو */}
+                      <div className="mb-4 position-relative">
+                        <div 
+                          className="position-relative mx-auto"
+                          style={{
+                            width: '120px',
+                            height: '120px'
+                          }}
+                        >
+                          <img 
+                            src={member.imagePath}
+                            alt={member.name}
+                            className="team-member-image rounded-circle w-100 h-100"
+                            style={{
+                              objectFit: 'cover',
+                              border: `4px solid ${member.color}20`,
+                              imageRendering: 'auto',
+                              WebkitImageRendering: 'auto'
+                            }}
+                            onError={(e) => {
+                              e.target.src = `data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><defs><linearGradient id="grad${index}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${member.color};stop-opacity:1" /><stop offset="100%" style="stop-color:${member.color}80;stop-opacity:1" /></linearGradient></defs><circle cx="60" cy="60" r="55" fill="url(#grad${index})"/><circle cx="60" cy="45" r="18" fill="white" opacity="0.9"/><ellipse cx="60" cy="80" rx="25" ry="16" fill="white" opacity="0.9"/></svg>`;
+                            }}
+                          />
+                          {/* Status Indicator */}
+                          <div 
+                            className="position-absolute bottom-0 end-0 rounded-circle border border-white"
+                            style={{
+                              width: '24px',
+                              height: '24px',
+                              background: member.color,
+                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+                            }}
+                          >
+                            <i className="fas fa-check text-white" style={{ fontSize: '10px', lineHeight: '24px' }}></i>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-center">
+                        <h5 className="fw-bold text-dark mb-2">
+                          {member.name}
+                        </h5>
+                        <span 
+                          className="badge rounded-pill px-3 py-2 mb-3"
+                          style={{
+                            background: `${member.color}15`,
+                            color: member.color,
+                            border: `1px solid ${member.color}30`
+                          }}
+                        >
+                          {member.role}
+                        </span>
+                        <p className="text-muted small mb-3 lh-base">
+                          {member.bio}
+                        </p>
+                        <div className="d-flex align-items-center justify-content-center gap-2 text-muted">
+                          <i className="fas fa-mouse-pointer" style={{ fontSize: '12px' }}></i>
+                          <small>اضغط لعرض المزيد</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* رسالة تحفيزية */}
+              <div className="mt-5 pt-4">
+                <div 
+                  className="p-4 rounded-4"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%)',
+                    border: '1px solid rgba(99, 102, 241, 0.2)'
+                  }}
+                >
+                  <div className="d-flex align-items-center justify-content-center gap-4 flex-wrap">
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="fas fa-graduation-cap footer-icon" aria-hidden></i>
+                      <span className="text-muted">تم التطوير لخدمة التعليم العالي</span>
+                    </div>
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="fas fa-rocket footer-icon" aria-hidden></i>
+                      <span className="text-muted">نحو مستقبل تعليمي أفضل وأكثر تنظيماً</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Member Details Modal */}
+      {selectedMember && (
+        <Modal 
+          show={showModal} 
+          onHide={handleCloseModal}
+          size="lg"
+          centered
+          className="team-member-modal"
+        >
+          <Modal.Header 
+            closeButton
+            style={{
+              background: selectedMember.gradient,
+              color: 'white',
+              border: 'none'
+            }}
+          >
+            <Modal.Title className="fw-bold d-flex align-items-center gap-2">
+              <i className="fas fa-user-circle"></i>
+              معلومات العضو
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body 
+            className="p-4"
+            style={{
+              background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
+            }}
+          >
+            <div className="row align-items-center">
+              <div className="col-md-4 text-center mb-4 mb-md-0">
+                <div className="position-relative d-inline-block">
+                  <img 
+                    src={selectedMember.imagePath}
+                    alt={selectedMember.name}
+                    className="rounded-4 shadow-lg"
+                    style={{
+                      width: '200px',
+                      height: '200px',
+                      objectFit: 'cover',
+                      border: `4px solid ${selectedMember.color}`,
+                      imageRendering: 'auto',
+                      WebkitImageRendering: 'auto',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onClick={handleImageClick}
+                    onError={(e) => {
+                      e.target.src = `data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="modalGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${selectedMember.color};stop-opacity:1" /><stop offset="100%" style="stop-color:${selectedMember.color}80;stop-opacity:1" /></linearGradient></defs><rect width="200" height="200" rx="16" fill="url(#modalGrad)"/><circle cx="100" cy="80" r="30" fill="white" opacity="0.9"/><ellipse cx="100" cy="140" rx="40" ry="25" fill="white" opacity="0.9"/></svg>`;
+                    }}
+                  />
+                  <div 
+                    className="position-absolute bottom-0 end-0 rounded-circle d-flex align-items-center justify-content-center"
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      background: selectedMember.color,
+                      border: '3px solid white',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                    }}
+                  >
+                    <i className="fas fa-star text-white"></i>
+                  </div>
+                </div>
+              </div>
+              <div className="col-md-8">
+                <div 
+                  className="p-4 rounded-4 h-100"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                  }}
+                >
+                  <h3 
+                    className="fw-bold mb-3"
+                    style={{
+                      color: selectedMember.color
+                    }}
+                  >
+                    {selectedMember.name}
+                  </h3>
+                  
+                  <div className="mb-4">
+                    <span 
+                      className="badge rounded-pill px-4 py-2 fs-6"
+                      style={{
+                        background: selectedMember.gradient,
+                        color: 'white'
+                      }}
+                    >
+                      <i className="fas fa-briefcase me-2"></i>
+                      {selectedMember.role}
+                    </span>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <h6 className="text-muted mb-2 fw-bold">
+                      <i className="fas fa-info-circle me-2"></i>
+                      نبذة تعريفية
+                    </h6>
+                    <p className="text-dark lh-lg mb-0">
+                      {selectedMember.bio}
+                    </p>
+                  </div>
+                  
+                  <div className="d-flex align-items-center gap-3 pt-3 border-top">
+                    <div 
+                      className="d-flex align-items-center justify-content-center rounded-3"
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        background: `${selectedMember.color}15`,
+                        color: selectedMember.color
+                      }}
+                    >
+                      <i className="fas fa-users"></i>
+                    </div>
+                    <div>
+                      <small className="text-muted d-block">عضو في</small>
+                      <span className="fw-bold text-dark">فريق Alpha للتطوير</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Modal.Body>
+          <Modal.Footer 
+            style={{
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(10px)',
+              border: 'none'
+            }}
+          >
+            <Button 
+              variant="outline-secondary" 
+              onClick={handleCloseModal}
+              className="px-4 py-2 rounded-3"
+            >
+              <i className="fas fa-times me-2"></i>
+              إغلاق
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
+
+      {/* Image Zoom Modal */}
+      {selectedMember && (
+        <Modal 
+          show={showImageModal} 
+          onHide={handleCloseImageModal}
+          centered
+          className="image-zoom-modal"
+          dialogClassName="image-modal-dialog"
+          style={{
+            backdropFilter: 'blur(20px)'
+          }}
+        >
+          <Modal.Body className="p-0 position-relative">
+            <button
+              type="button"
+              className="btn position-absolute top-0 end-0 m-3 rounded-circle d-flex align-items-center justify-content-center image-modal-close"
+              onClick={handleCloseImageModal}
+              aria-label="إغلاق"
+            >
+              <i className="fas fa-times"></i>
+            </button>
+            
+            <div 
+              className="d-flex justify-content-center align-items-center" 
+              style={{ 
+                minHeight: '500px',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: '20px',
+                padding: '40px',
+                margin: '20px',
+                boxShadow: '0 25px 80px rgba(0, 0, 0, 0.3)',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}
+            >
+              <div className="text-center">
+                <img 
+                  src={selectedMember.imagePath}
+                  alt={selectedMember.name}
+                  className="rounded-4 shadow-lg modal-zoom-image"
+                  style={{
+                    width: '450px',
+                    height: '450px',
+                    objectFit: 'cover',
+                    imageRendering: 'auto',
+                    WebkitImageRendering: 'auto',
+                    border: `6px solid ${selectedMember.color}`
+                  }}
+                  onError={(e) => {
+                    e.target.src = `data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="450" height="450" viewBox="0 0 450 450"><defs><linearGradient id="zoomGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${selectedMember.color};stop-opacity:1" /><stop offset="100%" style="stop-color:${selectedMember.color}80;stop-opacity:1" /></linearGradient></defs><rect width="450" height="450" rx="20" fill="url(#zoomGrad)"/><circle cx="225" cy="180" r="60" fill="white" opacity="0.9"/><ellipse cx="225" cy="300" rx="80" ry="50" fill="white" opacity="0.9"/></svg>`;
+                  }}
+                />
+                <div className="mt-4">
+                  <h4 
+                    className="fw-bold mb-2"
+                    style={{ color: selectedMember.color }}
+                  >
+                    {selectedMember.name}
+                  </h4>
+                  <span 
+                    className="badge rounded-pill px-3 py-2"
+                    style={{
+                      background: selectedMember.gradient,
+                      color: 'white'
+                    }}
+                  >
+                    {selectedMember.role}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Modal.Body>
+        </Modal>
+      )}
+    </footer>
   );
 };
 
-export default General;
+export default Footer;
