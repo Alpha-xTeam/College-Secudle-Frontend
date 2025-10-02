@@ -169,17 +169,61 @@ export const roomsAPI = {
   },
 
   // الحصول على جداول قاعة
-  getRoomSchedules: async (roomId) => {
-    // استخدام API الخاص بالقسم للمشرفين ورؤساء الأقسام
-    const response = await api.get(`/department/schedules/${roomId}`);
-    const apiData = response.data;
+  getRoomSchedules: async (roomId, options = {}) => {
+    // Retryable fetch with timeout and exponential backoff
+    const maxAttempts = 3;
+    const baseTimeout = 15000; // 15s
+    const baseDelay = 500; // ms
 
-    // Normalize lecture_type in returned schedules to english values for frontend consistency
-    if (apiData && apiData.data && Array.isArray(apiData.data)) {
-      apiData.data = apiData.data.map((s) => normalizeLectureTypeFromBackend(s));
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const config = { timeout: baseTimeout * attempt };
+        if (options.signal) config.signal = options.signal;
+        const response = await api.get(`/department/schedules/${roomId}`, config);
+        const apiData = response.data;
+
+        // Normalize lecture_type in returned schedules to english values for frontend consistency
+        if (apiData && apiData.data && Array.isArray(apiData.data)) {
+          apiData.data = apiData.data.map((s) => normalizeLectureTypeFromBackend(s));
+        }
+
+        return apiData;
+      } catch (err) {
+        const isAbort = err && (err.code === 'ECONNABORTED' || (err.message && err.message.toLowerCase().includes('aborted')) || (err.message && err.message.toLowerCase().includes('timeout')));
+        const isServerError = err && err.response && err.response.status >= 500;
+
+        // If last attempt, return a failure object but keep app flow
+        if (attempt === maxAttempts) {
+          const abortedFlag = isAbort;
+          console.warn(`roomsAPI.getRoomSchedules: failed after ${maxAttempts} attempts for room ${roomId}:`, err.message || err);
+          return {
+            success: false,
+            status: err.response?.status || 0,
+            message: err.response?.data?.message || err.message || 'Request failed',
+            data: [],
+            aborted: abortedFlag
+          };
+        }
+
+        // Retry on aborts/timeouts or 5xx server errors
+        if (isAbort || isServerError) {
+          const delay = baseDelay * Math.pow(2, attempt - 1); // exponential backoff
+          console.warn(`roomsAPI.getRoomSchedules: attempt ${attempt} failed for room ${roomId} (${err.message || err}). Retrying in ${delay}ms...`);
+          await new Promise((res) => setTimeout(res, delay));
+          continue; // retry
+        }
+
+        // For other client errors (4xx), give up immediately and return failure response
+        console.warn(`roomsAPI.getRoomSchedules: non-retryable error for room ${roomId}:`, err.message || err);
+        return {
+          success: false,
+          status: err.response?.status || 0,
+          message: err.response?.data?.message || err.message || 'Request failed',
+          data: [],
+          aborted: isAbort
+        };
+      }
     }
-
-    return apiData;
   },
 
   // إنشاء جدول جديد
@@ -419,6 +463,20 @@ export const roomsAPI = {
       }
     });
     return response.data;
+  },
+
+  // التحقق من المدرسين المشغولين في فترة زمنية معينة
+  checkBusyDoctors: async (timeSlot) => {
+    try {
+      const response = await api.get('/schedules/busy-doctors', { params: timeSlot });
+      return response.data;
+    } catch (error) {
+      // If endpoint doesn't exist, return empty result
+      if (error.response && error.response.status === 404) {
+        return { success: true, data: [] };
+      }
+      throw error;
+    }
   }
 };
 

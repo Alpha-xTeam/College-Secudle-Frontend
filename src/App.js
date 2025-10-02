@@ -13,6 +13,7 @@ import EditSchedule from './pages/EditSchedule';
 import ManageDoctors from './pages/ManageDoctors'; // New import
 import RoomSchedulePublic from './pages/RoomSchedulePublic';
 import StudentScheduleView from './pages/StudentScheduleView';
+import General from './pages/General';
 import { isAuthenticated, getUserRole, clearSessionOnClose } from './utils/auth';
 import { useAuthGuard, useSecurityMonitor } from './hooks/useAuthGuard';
 import './styles/responsive.css';
@@ -73,8 +74,10 @@ function App() {
     return children;
   };
 
-  // إخفاء Navbar في صفحات الهوم والصفحات العامة
-  const isHomeOrPublic = window.location.pathname === '/home' || window.location.pathname.startsWith('/room/');
+  // إخفاء Navbar في صفحات الهوم والصفحات العامة (بما في ذلك صفحة /general)
+  const currentPath = (window.location && window.location.pathname) ? window.location.pathname : '';
+  const currentPathLower = currentPath.toLowerCase();
+  const isHomeOrPublic = currentPathLower === '/home' || currentPathLower === '/general' || currentPathLower.startsWith('/room/');
   if (authState.loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -150,6 +153,10 @@ function App() {
                   <ManageDoctors />
                 </ProtectedRoute>
               } 
+            />
+            <Route 
+              path="/general" 
+              element={<General />} 
             />
             {/* Root Path - Always goes to Home first */}
             <Route path="/" element={<Navigate to="/home" replace />} />

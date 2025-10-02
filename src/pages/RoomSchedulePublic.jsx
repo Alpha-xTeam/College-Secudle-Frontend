@@ -303,34 +303,14 @@ const RoomSchedulePublic = () => {
     try {
       // تحويل قيمة المرحلة من رقم إلى كلمة
       const stageWord = convertStageToWord(stage);
-      console.log('جاري جلب الجدول الأسبوعي للمرحلة:', stage, '(تم تحويلها إلى:', stageWord, ') ونوع الدراسة:', studyType);
-      console.log('معرف القسم:', departmentId);
       const response = await schedulesAPI.getWeeklyScheduleByStage(departmentId, stageWord, studyType);
-      console.log('استجابة API الكاملة:', response);
       
       if (response.success) {
-        console.log('تم جلب البيانات بنجاح:', response.data);
-        console.log('نوع البيانات:', typeof response.data);
-        console.log('مفاتيح البيانات:', Object.keys(response.data));
-        
-        // طباعة تفاصيل كل يوم
-        Object.entries(response.data).forEach(([day, schedules]) => {
-          console.log(`اليوم ${day}: نوع البيانات = ${typeof schedules}, عدد الأشياء = ${Array.isArray(schedules) ? schedules.length : 'غير مصفوفة'}`);
-          if (Array.isArray(schedules)) {
-            schedules.forEach((schedule, index) => {
-              console.log(`  المحاضرة ${index + 1}: ${schedule.subject_name} - ${schedule.start_time}-${schedule.end_time} - القاعة: ${schedule.room_name}`);
-            });
-          }
-        });
-        
         setModalWeeklyScheduleData(response.data);
       } else {
-        console.error('فشل في جلب الجدول الأسبوعي:', response.message);
         setModalWeeklyScheduleData(null);
       }
     } catch (error) {
-      console.error('حدث خطأ في جلب الجدول الأسبوعي:', error);
-      console.error('تفاصيل الخطأ:', error.response?.data || error.message);
       setModalWeeklyScheduleData(null);
     } finally {
       setModalWeeklyScheduleLoading(false);
@@ -340,7 +320,6 @@ const RoomSchedulePublic = () => {
   const handleStudentSearch = () => {
     // البحث يتم تلقائياً عبر useEffect عند تغيير studentIdInput
     // هذه الدالة يمكن أن تُستخدم لإجراء بحث إضافي إذا لزم الأمر
-    console.log('Student search triggered for ID:', studentIdInput);
   };
 
   const resetView = () => {
@@ -692,15 +671,24 @@ const RoomSchedulePublic = () => {
                         
                         {/* Content */}
                         <div className="d-flex align-items-start gap-3" style={{ width: '100%' }}>
-                          {/* Subject and Room */}
-                          <div className="flex-grow-1">
-                            <div style={{ marginTop: 6 }} />
-                             <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-                             القاعة: <strong style={{ color: '#1f2937' }}>{ann.room} {ann.room_code ? `(${ann.room_code})` : ''}</strong>
-                           </div>
-                          </div>
-                          
-                          {/* Doctor and Type Badge */}
+                      {/* Subject and Room */}
+                      <div className="flex-grow-1">
+                        <div style={{ marginTop: 6 }} />
+                         <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+                         القاعة: <strong style={{ color: '#1f2937' }}>{ann.room} {ann.room_code ? `(${ann.room_code})` : ''}</strong>
+                       </div>
+                       {/* عرض الشعبة للنظري أو الكروب للعملي */}
+                       {ann.lecture_type === 'theoretical' && ann.section && (
+                         <div style={{ fontSize: '0.85rem', color: '#667eea', marginTop: '4px', fontWeight: '600' }}>
+                           الشعبة: <strong>{ann.section}</strong>
+                         </div>
+                       )}
+                       {ann.lecture_type === 'practical' && (ann.group || ann.group_letter) && (
+                         <div style={{ fontSize: '0.85rem', color: '#dc3545', marginTop: '4px', fontWeight: '600' }}>
+                           الكروب: <strong>{ann.group || ann.group_letter}</strong>
+                         </div>
+                       )}
+                      </div>                          {/* Doctor and Type Badge */}
                           <div style={{ 
                             display: 'flex', 
                             flexDirection: 'column', 
@@ -1134,6 +1122,17 @@ const RoomSchedulePublic = () => {
                            <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>
                              القاعة: <strong style={{ color: '#1f2937' }}>{item.room} {item.room_code ? `(${item.room_code})` : ''}</strong>
                            </div>
+                           {/* عرض الشعبة للنظري أو الكروب للعملي */}
+                           {item.lecture_type === 'theoretical' && item.section && (
+                             <div style={{ fontSize: '0.85rem', color: '#667eea', marginTop: '4px', fontWeight: '600' }}>
+                               الشعبة: <strong>{item.section}</strong>
+                             </div>
+                           )}
+                           {item.lecture_type === 'practical' && (item.group || item.group_letter) && (
+                             <div style={{ fontSize: '0.85rem', color: '#dc3545', marginTop: '4px', fontWeight: '600' }}>
+                               الكروب: <strong>{item.group || item.group_letter}</strong>
+                             </div>
+                           )}
                         </div>
                         
                         {/* Doctor and Type Badge */}
@@ -1372,6 +1371,17 @@ const RoomSchedulePublic = () => {
                          <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>
                          القاعة: <strong style={{ color: '#1f2937' }}>{ann.room} {ann.room_code ? `(${ann.room_code})` : ''}</strong>
                        </div>
+                       {/* عرض الشعبة للنظري أو الكروب للعملي */}
+                       {ann.lecture_type === 'theoretical' && ann.section && (
+                         <div style={{ fontSize: '0.85rem', color: '#667eea', marginTop: '4px', fontWeight: '600' }}>
+                           الشعبة: <strong>{ann.section}</strong>
+                         </div>
+                       )}
+                       {ann.lecture_type === 'practical' && (ann.group || ann.group_letter) && (
+                         <div style={{ fontSize: '0.85rem', color: '#dc3545', marginTop: '4px', fontWeight: '600' }}>
+                           الكروب: <strong>{ann.group || ann.group_letter}</strong>
+                         </div>
+                       )}
                       </div>
                       
                       {/* Doctor and Type Badge */}

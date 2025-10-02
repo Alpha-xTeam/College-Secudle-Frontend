@@ -27,8 +27,17 @@ export const schedulesAPI = {
 
   // الحصول على جدول القاعة (عام)
   getRoomSchedule: async (roomCode, studyType) => {
-    const response = await api.get(`/room/${roomCode}/schedule?study_type=${studyType}`);
-    return response.data;
+    try {
+      const response = await api.get(`/room/${roomCode}/schedule?study_type=${studyType}`, { timeout: 15000 });
+      return response.data;
+    } catch (err) {
+      if (err && (err.code === 'ECONNABORTED' || (err.message && err.message.toLowerCase().includes('aborted') || err.message && err.message.toLowerCase().includes('timeout')))) {
+        console.warn('schedulesAPI.getRoomSchedule: request timed out/aborted, retrying with longer timeout');
+        const response = await api.get(`/room/${roomCode}/schedule?study_type=${studyType}`, { timeout: 30000 });
+        return response.data;
+      }
+      throw err;
+    }
   },
 
   // الحصول على معلومات القاعة (من rooms routes)
@@ -49,14 +58,33 @@ export const schedulesAPI = {
     if (departmentId) {
       url += `&department_id=${departmentId}`;
     }
-    const response = await api.get(url);
-    return response.data;
+    try {
+      const response = await api.get(url, { timeout: 10000 });
+      return response.data;
+    } catch (err) {
+      if (err && (err.code === 'ECONNABORTED' || (err.message && err.message.toLowerCase().includes('aborted') || err.message && err.message.toLowerCase().includes('timeout')))) {
+        console.warn('schedulesAPI.searchRooms: request timed out/aborted, retrying with longer timeout');
+        const response = await api.get(url, { timeout: 20000 });
+        return response.data;
+      }
+      throw err;
+    }
   },
 
   // الحصول على الأقسام
   getDepartments: async () => {
-    const response = await api.get('/departments');
-    return response.data;
+    try {
+      const response = await api.get('/departments', { timeout: 10000 });
+      return response.data;
+    } catch (err) {
+      // If request was aborted/timed out, retry once with longer timeout
+      if (err && (err.code === 'ECONNABORTED' || (err.message && err.message.toLowerCase().includes('aborted') || err.message && err.message.toLowerCase().includes('timeout')))) {
+        console.warn('schedulesAPI.getDepartments: initial request timed out/aborted, retrying with longer timeout');
+        const response = await api.get('/departments', { timeout: 20000 });
+        return response.data;
+      }
+      throw err;
+    }
   },
 
   // الحصول على إعلانات القسم الخاص بقاعة عامة

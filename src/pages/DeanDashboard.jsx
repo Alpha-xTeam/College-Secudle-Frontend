@@ -59,52 +59,83 @@ const DeanDashboard = () => {
   const currentUserRole = getUserRole(); // Get current user role
 
   useEffect(() => {
-    fetchData();
+    let controller = new AbortController();
+    fetchData(controller);
+    // cleanup: abort any pending requests when component unmounts
+    return () => {
+      controller.abort();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchData = useCallback(async () => {
-    // منع تكرار الطلبات خلال فترة قصيرة
-    // const API_URL = API_URL_GLOBAL;
-      const headers = getAuthHeaders();
-      try {
+  const isFetchingRef = React.useRef(false);
+  const fetchData = useCallback(async (controller = null) => {
+     // Skip if we fetched very recently (30s) to avoid duplicate heavy requests
+    if (lastFetch && Date.now() - lastFetch < 30 * 1000) return;
+    if (isFetchingRef.current) return; // prevent overlapping fetches
+    isFetchingRef.current = true;
+     const headers = getAuthHeaders();
+     setLoading(true);
+     try {
       // First get rooms to use for fetching schedules
       const roomsRes = await axios.get(`${process.env.REACT_APP_API_URL}/api/rooms`, { headers });
-      setRooms(roomsRes.data.data);
-      
-      // Fetch schedules for all rooms
-      const schedulesPromises = roomsRes.data.data.map(room => 
-        roomsAPI.getRoomSchedules(room.id)
-      );
-      
-      // Wait for all schedule requests to complete
-      const schedulesResults = await Promise.all(schedulesPromises);
-      
-      // Flatten all schedules into a single array
-      const allSchedules = schedulesResults.flatMap((result, index) => {
-        const roomId = roomsRes.data.data[index].id;
-        const roomName = roomsRes.data.data[index].name;
-        return result.data.map(schedule => ({
-          ...schedule,
-          room_name: roomName,
-          room_id: roomId
-        }));
+      const roomsList = roomsRes.data.data || [];
+      setRooms(roomsList);
+
+      // Concurrency-limited fetch for room schedules to avoid overwhelming server
+      const concurrency = 5;
+      const schedulesResults = new Array(roomsList.length);
+      let ptr = 0;
+
+      const worker = async () => {
+        while (true) {
+          const i = ptr++;
+          if (i >= roomsList.length) break;
+          const room = roomsList[i];
+          try {
+            const res = await roomsAPI.getRoomSchedules(room.id, { signal: controller?.signal });
+            // roomsAPI now returns { success:false, data: [] } on failure; do not treat aborted specially here
+            schedulesResults[i] = { room, res };
+          } catch (err) {
+            // If request was aborted, don't spam the console; record aborted flag
+            const isAbort = err && (err.code === 'ECONNABORTED' || (err.message && err.message.toLowerCase().includes('aborted')) || (err.message && err.message.toLowerCase().includes('timeout')));
+            if (!isAbort) console.warn(`Failed to fetch schedules for room ${room.id}:`, err.message || err);
+            schedulesResults[i] = { room, error: err, aborted: isAbort };
+          }
+        }
+      };
+
+      // Start workers
+      const workers = Array.from({ length: Math.min(concurrency, roomsList.length) }, () => worker());
+      await Promise.all(workers);
+
+      // Flatten the successful schedule results
+      const allSchedules = schedulesResults.flatMap((item) => {
+        if (!item || !item.res || !item.res.data) return [];
+        const roomId = item.room.id;
+        const roomName = item.room.name;
+        return item.res.data.map(schedule => ({ ...schedule, room_name: roomName, room_id: roomId }));
       });
-      
-      // Fetch other data
-      const [statsRes, deptsRes, annsRes] = await Promise.all([
+
+      // Fetch other data in parallel (statistics, departments, announcements)
+      const [statsRes, deptsRes, annsRes] = await Promise.allSettled([
         axios.get(`${process.env.REACT_APP_API_URL}/api/dean/statistics`, { headers }),
         axios.get(`${process.env.REACT_APP_API_URL}/api/dean/departments`, { headers }),
         axios.get(`${process.env.REACT_APP_API_URL}/api/dean/announcements`, { headers })
       ]);
 
-      setStatistics(statsRes.data.data);
-      setDepartments(deptsRes.data.data);
-      setAnnouncements(annsRes.data.data || []);
-      setSchedules(allSchedules); // Set schedules data
+      if (statsRes.status === 'fulfilled') setStatistics(statsRes.value.data.data);
+      if (deptsRes.status === 'fulfilled') setDepartments(deptsRes.value.data.data);
+      if (annsRes.status === 'fulfilled') setAnnouncements(annsRes.value.data.data || []);
+
+      setSchedules(allSchedules);
+      setLastFetch(Date.now());
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('فشل في جلب البيانات');
+    } finally {
+      setLoading(false);
+      isFetchingRef.current = false;
     }
   }, [lastFetch]);
 

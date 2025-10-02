@@ -45,7 +45,8 @@ export const useSecurityMonitor = () => {
       };
       
       // يمكن إرسال هذه البيانات للخادم للتدقيق
-      console.log('Access Log:', accessLog);
+      // تم تعطيل console.log لتنظيف الكونسل
+      // console.log('Access Log:', accessLog);
       
       // حفظ محلي للسجلات (اختياري) - استخدام sessionStorage
       const logs = JSON.parse(sessionStorage.getItem('accessLogs') || '[]');

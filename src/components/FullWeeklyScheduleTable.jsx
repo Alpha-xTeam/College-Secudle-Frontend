@@ -416,16 +416,6 @@ const getLectureTypeBadge = (schedule) => {
   if (explicitProvided) {
     if ((explicitIsPractical && !inferredIsPractical && Math.abs(inferredScore) >= 3) || (!explicitIsPractical && inferredIsPractical && Math.abs(inferredScore) >= 3)) {
       finalIsPractical = inferredIsPractical;
-      console.warn('Overriding explicit lecture_type with inferred value due to strong signals', {
-        id: schedule.id || null,
-        subject: schedule.subject_name,
-        explicit: ltRaw,
-        inferredScore,
-        inferredIsPractical,
-        roomName: schedule.room_name || schedule.room_code,
-        group: schedule.group || schedule.group_letter,
-        section: schedule.section || schedule.section_number,
-      });
     } else {
       finalIsPractical = explicitIsPractical;
     }
@@ -487,21 +477,7 @@ const getLectureTypeBadge = (schedule) => {
     }
   }
 
-  // If both are empty, print a concise diagnostic to help identify API shape
-  if ((!groupValue || groupValue.trim() === '') && (!sectionValue || sectionValue.trim() === '')) {
-    try {
-      const keys = Object.keys(schedule).slice(0, 40);
-      console.warn('FullWeeklyScheduleTable: no group/section found for schedule', {
-        id: schedule.id || schedule.schedule_id || null,
-        subject: schedule.subject_name || schedule.subject || null,
-        topKeys: keys,
-        groupObjKeys: schedule.group ? Object.keys(schedule.group) : null,
-        sectionObjKeys: schedule.section ? Object.keys(schedule.section) : null
-      });
-    } catch (e) {
-      // ignore logging errors
-    }
-  }
+
 
   // normalize empty values to '-'
   if (!groupValue) groupValue = '';
@@ -545,19 +521,7 @@ const FullWeeklyScheduleTable = ({ weeklyScheduleData, stage, studyType }) => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const styles = getStyles(isMobile);
 
-  // طباعة البيانات المستلمة للتشخيص
-  useEffect(() => {
-    console.log('FullWeeklyScheduleTable - البيانات المستلمة:', weeklyScheduleData);
-    console.log('FullWeeklyScheduleTable - المرحلة:', stage);
-    console.log('FullWeeklyScheduleTable - نوع الدراسة:', studyType);
-    
-    if (weeklyScheduleData) {
-      console.log('عدد الأيام في البيانات:', Object.keys(weeklyScheduleData).length);
-      Object.entries(weeklyScheduleData).forEach(([day, schedules]) => {
-        console.log(`اليوم ${day}: ${schedules.length} محاضرة`);
-      });
-    }
-  }, [weeklyScheduleData, stage, studyType]);
+
 
   // تعيين اليوم الحالي عند التحميل للموبايل
   useEffect(() => {
@@ -650,12 +614,12 @@ const FullWeeklyScheduleTable = ({ weeklyScheduleData, stage, studyType }) => {
 
   // أيام الأسبوع للموبايل فقط
   const mobileDayOptions = [
-    { value: 'saturday', label: (<><Icon name="calendar" className="me-1" />السبت</>) },
-    { value: 'sunday', label: (<><Icon name="sun" className="me-1 text-warning" />الأحد</>) },
-    { value: 'monday', label: (<><Icon name="book" className="me-1 text-primary" />الاثنين</>) },
-    { value: 'tuesday', label: (<><Icon name="group" className="me-1 text-success" />الثلاثاء</>) },
-    { value: 'wednesday', label: (<><Icon name="graduation" className="me-1 text-info" />الأربعاء</>) },
-    { value: 'thursday', label: (<><Icon name="tag" className="me-1 text-secondary" />الخميس</>) }
+    { value: 'saturday', label: 'السبت' },
+    { value: 'sunday', label: 'الأحد' },
+    { value: 'monday', label: 'الاثنين' },
+    { value: 'tuesday', label: 'الثلاثاء' },
+    { value: 'wednesday', label: 'الأربعاء' },
+    { value: 'thursday', label: 'الخميس' }
   ];
 
   const getStageText = (stage) => {
@@ -734,7 +698,6 @@ const FullWeeklyScheduleTable = ({ weeklyScheduleData, stage, studyType }) => {
         });
       });
     }
-    console.log('organizedDataByTime - النتيجة النهائية:', data);
     return data;
   }, [weeklyScheduleData, dynamicTimeSlots]);
 
@@ -754,7 +717,6 @@ const FullWeeklyScheduleTable = ({ weeklyScheduleData, stage, studyType }) => {
   const handleDownloadPDF = () => {
     const cardElement = document.getElementById('full-schedule-card');
     if (!cardElement) {
-      console.error('Element to capture not found!');
       return;
     }
 
@@ -797,7 +759,6 @@ const FullWeeklyScheduleTable = ({ weeklyScheduleData, stage, studyType }) => {
         setIsDownloading(false);
       })
       .catch((err) => {
-        console.error('Error generating PDF:', err);
         setIsDownloading(false);
       });
   };
@@ -1053,10 +1014,6 @@ const FullWeeklyScheduleTable = ({ weeklyScheduleData, stage, studyType }) => {
                         const timeKey = `${slot.start}-${slot.end}`;
                         // تصفية المحاضرات المؤجلة من اليوم الأصلي
                         const schedules = organizedDataByTime[timeKey][day];
-                        console.log(`اليوم ${day}, الوقت ${timeKey}: عدد المحاضرات = ${schedules.length}`);
-                        schedules.forEach((schedule, idx) => {
-                          console.log(`  المحاضرة ${idx + 1}: ${schedule.subject_name} - ${schedule.room_name}`);
-                        });
                         return (
                           <td key={index} style={styles.scheduleCell}>
                             {schedules &&

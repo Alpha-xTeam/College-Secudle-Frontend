@@ -26,17 +26,18 @@ export const isAuthenticated = () => {
   const token = getAuthToken();
   const user = getUser();
   
-  console.log('DEBUG: Token:', token);
-  console.log('DEBUG: User:', user);
+  // إزالة console.log لتنظيف الكونسل
+  // console.log('DEBUG: Token:', token);
+  // console.log('DEBUG: User:', user);
   
   // فحص إضافي للتأكد من صحة البيانات
   if (!token || !user) {
-    console.log('DEBUG: Authentication failed - missing token or user');
+    // console.log('DEBUG: Authentication failed - missing token or user');
     return false;
   }
   
   // تبسيط فحص المصادقة - تجاهل تحقق JWT للاختبار
-  console.log('DEBUG: Authentication successful');
+  // console.log('DEBUG: Authentication successful');
   return true;
 };
 
@@ -71,5 +72,15 @@ export const clearSessionOnClose = () => {
 // إضافة Authorization header للطلبات
 export const getAuthHeaders = () => {
   const token = getAuthToken();
+  const user = getUser();
+  
+  console.debug('getAuthHeaders: token exists =', !!token);
+  console.debug('getAuthHeaders: user exists =', !!user);
+  
+  if (token) {
+    console.debug('getAuthHeaders: token preview =', token.substring(0, 20) + '...');
+    console.debug('getAuthHeaders: user role =', user ? user.role : 'unknown');
+  }
+  
   return token ? { Authorization: `Bearer ${token}` } : {};
 };

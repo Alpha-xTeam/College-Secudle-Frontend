@@ -17,17 +17,8 @@ const CountdownTimer = ({ startTime, endTime, dayOfWeek }) => {
       const now = new Date();
       const currentDay = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
       
-      console.log('CountdownTimer Debug:', {
-        currentDay,
-        dayOfWeek,
-        startTime,
-        endTime,
-        currentTime: now.toLocaleTimeString('ar-EG')
-      });
-      
       // التحقق من أن اليوم الحالي يطابق يوم المحاضرة
       if (currentDay !== dayOfWeek) {
-        console.log('Day mismatch - no countdown');
         setStatus(null);
         return;
       }
@@ -49,15 +40,6 @@ const CountdownTimer = ({ startTime, endTime, dayOfWeek }) => {
       const startTimeMs = lectureStart.getTime();
       const endTimeMs = lectureEnd.getTime();
       const oneHourBeforeMs = oneHourBefore.getTime();
-
-      console.log('Time Check:', {
-        currentTime: new Date(currentTime).toLocaleTimeString('ar-EG'),
-        oneHourBefore: new Date(oneHourBeforeMs).toLocaleTimeString('ar-EG'),
-        lectureStart: new Date(startTimeMs).toLocaleTimeString('ar-EG'),
-        lectureEnd: new Date(endTimeMs).toLocaleTimeString('ar-EG'),
-        isUpcoming: currentTime >= oneHourBeforeMs && currentTime < startTimeMs,
-        isOngoing: currentTime >= startTimeMs && currentTime < endTimeMs
-      });
 
       // تحديد الحالة
       if (currentTime >= oneHourBeforeMs && currentTime < startTimeMs) {

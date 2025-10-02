@@ -76,7 +76,6 @@ const ProfessionalScheduleTable = ({ scheduleData, studyType, onShowWeeklySchedu
           setStudentModalSchedule({}); // No schedule found
         }
       } catch (error) {
-        console.error('Error filtering student schedule:', error);
         setStudentFilterError('حدث خطأ أثناء تصفية الجدول.');
         setFilteredScheduleData(null);
         setStudentModalSchedule(null);
@@ -436,8 +435,6 @@ const ProfessionalScheduleTable = ({ scheduleData, studyType, onShowWeeklySchedu
         </div>
       </div>
 
-      {console.log('DEBUG: organizedData before render', organizedData)}
-
       {/* الجدول الرئيسي - مخفي على الهواتف المحمولة */}
       <div 
         className="desktop-table-container d-none d-md-block"
@@ -796,25 +793,31 @@ const ProfessionalScheduleTable = ({ scheduleData, studyType, onShowWeeklySchedu
                               </div>
                             </div>
                             
-                            <div className="mobile-room-info-item">
-                              <div className="mobile-room-info-label">
-                                <Icon name="tag" className="me-1" />
-                                الشعبة
+                            {/* عرض الشعبة فقط للمحاضرات النظرية */}
+                            {(schedule.lecture_type === 'theoretical' || schedule.lecture_type === 'نظري') && (
+                              <div className="mobile-room-info-item">
+                                <div className="mobile-room-info-label">
+                                  <Icon name="tag" className="me-1" />
+                                  الشعبة
+                                </div>
+                                <div className="mobile-room-info-value">
+                                  <strong className="text-warning">{schedule.section || schedule.section_number || 'غير محدد'}</strong>
+                                </div>
                               </div>
-                              <div className="mobile-room-info-value">
-                                <strong className="text-warning">{schedule.section || 'غير محدد'}</strong>
-                              </div>
-                            </div>
+                            )}
                             
-                            <div className="mobile-room-info-item">
-                              <div className="mobile-room-info-label">
-                                <Icon name="users" className="me-1" />
-                                الجروب
+                            {/* عرض الكروب فقط للمحاضرات العملية */}
+                            {(schedule.lecture_type === 'practical' || schedule.lecture_type === 'عملي') && (
+                              <div className="mobile-room-info-item">
+                                <div className="mobile-room-info-label">
+                                  <Icon name="users" className="me-1" />
+                                  الكروب
+                                </div>
+                                <div className="mobile-room-info-value">
+                                  <strong className="text-info">{schedule.group || schedule.group_letter || 'غير محدد'}</strong>
+                                </div>
                               </div>
-                              <div className="mobile-room-info-value">
-                                <strong className="text-info">{schedule.group || 'غير محدد'}</strong>
-                              </div>
-                            </div>
+                            )}
                           </div>
                           
                           {schedule.has_multiple_doctors ? (
